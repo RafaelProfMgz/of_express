@@ -15,6 +15,10 @@
   .resumo-taxa .lin.agora span:last-child{font-size:1.05rem}
   .resumo-taxa .obs{font-size:.75rem;color:var(--sub);margin-top:.6rem;line-height:1.5}
   .resumo-taxa .rotulo small{display:block;font-weight:400;font-size:.73rem;color:var(--sub);margin-top:.1rem}
+  .resumo-duracao{background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:.7rem;
+    padding:.7rem .8rem;font-size:.88rem;color:#92400e;font-weight:600}
+  .resumo-duracao small{display:block;font-weight:400;font-size:.75rem;color:var(--sub);margin-top:.2rem}
+  select:disabled{background-color:var(--bg);color:var(--sub);cursor:not-allowed;opacity:1}
 </style>
 </head>
 <body data-pagina="cadastrar">
@@ -56,14 +60,7 @@
           </div>
           <div>
             <label for="v-periodo">Período *</label>
-            <select id="v-periodo" required>
-              <option value="Comercial">Comercial (8h–18h)</option>
-              <option value="Manhã">Manhã</option>
-              <option value="Tarde">Tarde</option>
-              <option value="Noturno">Noturno</option>
-              <option value="Fim de semana">Fim de semana</option>
-              <option value="Flexível">Flexível</option>
-            </select>
+            <select id="v-periodo" required></select>
           </div>
         </div>
 
@@ -85,17 +82,31 @@
         </div>
 
         <div>
-          <label for="v-dur-num">Duração *</label>
-          <div class="campo-composto">
-            <input id="v-dur-num" type="number" min="1" step="1" placeholder="8" required
-                   aria-label="Quantidade de duração">
-            <select id="v-dur-uni" aria-label="Unidade da duração">
-              <option value="horas" selected>horas</option>
-              <option value="dias">dias</option>
-            </select>
-          </div>
-          <p class="field-help" id="dur-previa">Ex.: 8 horas, ou 2 dias.</p>
+          <label for="v-dur-uni">O serviço é contado em *</label>
+          <select id="v-dur-uni">
+            <option value="horas" selected>Horas — um turno no mesmo dia</option>
+            <option value="dias">Dias — serviço de um ou mais dias</option>
+          </select>
         </div>
+
+        <!-- Horário: automático pelo período, editável só quando o período é Flexível -->
+        <div>
+          <label for="v-hora-ini">Horário do serviço *</label>
+          <div class="campo-composto">
+            <select id="v-hora-ini" aria-label="Hora de início"></select>
+            <select id="v-hora-fim" aria-label="Hora de término"></select>
+          </div>
+          <p class="field-help" id="horario-nota"></p>
+        </div>
+
+        <!-- Quantidade de dias: só aparece quando a unidade é "dias" -->
+        <div id="bloco-dias" class="hidden">
+          <label for="v-dur-num">Quantos dias? *</label>
+          <input id="v-dur-num" type="number" min="1" max="60" step="1" placeholder="2">
+          <p class="field-help">O horário acima vale para cada dia de serviço.</p>
+        </div>
+
+        <div class="resumo-duracao" id="resumo-duracao" aria-live="polite"></div>
 
         <div>
           <label for="v-valor">Valor livre da diarista (R$) *</label>
@@ -187,6 +198,10 @@ document.addEventListener('of:pronto', function () {
     document.getElementById('v-tipo').insertAdjacentHTML('beforeend',
       '<option value="' + t[0] + '">' + t[1] + '</option>');
   });
+  OF.PERIODOS.forEach(function (p) {
+    document.getElementById('v-periodo').insertAdjacentHTML('beforeend',
+      '<option value="' + OF.esc(p.nome) + '">' + OF.esc(p.rotulo) + '</option>');
+  });
 
   var valorEl = document.getElementById('v-valor');
   var descEl = document.getElementById('v-desc');
@@ -197,20 +212,82 @@ document.addEventListener('of:pronto', function () {
     document.getElementById('conta-desc').textContent = descEl.value.length;
   });
 
-  // Duração: monta o texto final a partir do número + unidade
+  var periodoEl = document.getElementById('v-periodo');
+  var horaIniEl = document.getElementById('v-hora-ini');
+  var horaFimEl = document.getElementById('v-hora-fim');
+
+  // Opções de hora (de 30 em 30 minutos)
+  OF.opcoesHora().forEach(function (h) {
+    var op = '<option value="' + h + '">' + h + '</option>';
+    horaIniEl.insertAdjacentHTML('beforeend', op);
+    horaFimEl.insertAdjacentHTML('beforeend', op);
+  });
+
+  // Horário: vem do período escolhido; só "Flexível" libera a edição
+  function aplicarPeriodo() {
+    var info = OF.periodoInfo(periodoEl.value);
+    var flex = OF.periodoFlexivel(periodoEl.value);
+    horaIniEl.disabled = !flex;
+    horaFimEl.disabled = !flex;
+    if (!flex) {
+      horaIniEl.value = info.inicio;
+      horaFimEl.value = info.fim;
+      document.getElementById('horario-nota').innerHTML =
+        'Horário comercial padrão do período <strong>' + OF.esc(info.nome) + '</strong>. ' +
+        'Escolha <strong>Flexível</strong> no período acima para definir outro horário.';
+    } else {
+      if (!horaIniEl.value) horaIniEl.value = '08:00';
+      if (!horaFimEl.value) horaFimEl.value = '12:00';
+      document.getElementById('horario-nota').textContent =
+        'Período flexível: escolha a hora de início e de término do serviço.';
+    }
+    pintarDuracao();
+  }
+
+  // Unidade horas/dias: em dias aparece o campo de quantidade
+  function aplicarUnidade() {
+    var dias = durUniEl.value === 'dias';
+    document.getElementById('bloco-dias').classList.toggle('hidden', !dias);
+    if (dias && !durNumEl.value) durNumEl.value = '1';
+    pintarDuracao();
+  }
+
+  // Em horas, a duração é CALCULADA pela janela de horário — nunca discorda dela
+  function horasDaJanela() { return OF.horasEntre(horaIniEl.value, horaFimEl.value); }
   function duracaoTexto() {
-    var n = parseInt(durNumEl.value, 10);
-    if (!n || n < 1) return '';
-    return OF.formatarDuracao(n, durUniEl.value);
+    if (durUniEl.value === 'dias') {
+      var n = parseInt(durNumEl.value, 10);
+      return (!n || n < 1) ? '' : OF.formatarDuracao(n, 'dias');
+    }
+    var h = horasDaJanela();
+    return h > 0 ? OF.formatarDuracao(h, 'horas') : '';
   }
   function pintarDuracao() {
-    var t = duracaoTexto();
-    document.getElementById('dur-previa').textContent =
-      t ? 'Vai aparecer na diária como: ' + t : 'Ex.: 8 horas, ou 2 dias.';
+    var alvo = document.getElementById('resumo-duracao');
+    var janela = OF.janelaTexto(horaIniEl.value, horaFimEl.value);
+    var horas = horasDaJanela();
+    if (durUniEl.value === 'dias') {
+      var n = parseInt(durNumEl.value, 10) || 0;
+      alvo.innerHTML = n
+        ? 'Vai aparecer como: <strong>' + OF.esc(OF.formatarDuracao(n, 'dias')) + ' · ' + OF.esc(janela) + '</strong>' +
+          '<small>' + OF.esc(OF.formatarDuracao(horas, 'horas')) + ' por dia, ' + n + (n === 1 ? ' dia' : ' dias') +
+          ' — total de ' + OF.esc(OF.formatarDuracao(horas * n, 'horas')) + ' de serviço.</small>'
+        : 'Informe quantos dias para ver o resumo.';
+    } else {
+      alvo.innerHTML = horas > 0
+        ? 'Vai aparecer como: <strong>' + OF.esc(OF.formatarDuracao(horas, 'horas')) + ' · ' + OF.esc(janela) + '</strong>' +
+          '<small>A duração em horas é calculada pelo horário de início e término.</small>'
+        : 'Escolha um horário de término diferente do de início.';
+    }
   }
+
+  periodoEl.addEventListener('change', aplicarPeriodo);
+  horaIniEl.addEventListener('change', pintarDuracao);
+  horaFimEl.addEventListener('change', pintarDuracao);
+  durUniEl.addEventListener('change', aplicarUnidade);
   durNumEl.addEventListener('input', pintarDuracao);
-  durUniEl.addEventListener('change', pintarDuracao);
-  pintarDuracao();
+  aplicarUnidade();
+  aplicarPeriodo();
 
   // Valores: o campo é o valor LIVRE da diarista; a taxa entra por cima
   function pintarResumo() {
@@ -250,8 +327,10 @@ document.addEventListener('of:pronto', function () {
       local: document.getElementById('v-local').value.trim(),
       cidade: document.getElementById('v-cidade').value.trim(),
       dur: duracaoTexto(),
-      durQtd: parseInt(durNumEl.value, 10) || 0,
+      durQtd: durUniEl.value === 'dias' ? (parseInt(durNumEl.value, 10) || 0) : horasDaJanela(),
       durUnidade: durUniEl.value,
+      horaInicio: horaIniEl.value,
+      horaFim: horaFimEl.value,
       valor: parseFloat(valorEl.value) || 0,
       nome: document.getElementById('v-nome').value.trim(),
       tel: document.getElementById('v-tel').value.trim(),
@@ -261,9 +340,14 @@ document.addEventListener('of:pronto', function () {
     if (dados.titulo.length < 6) return falhar('O título precisa ter ao menos 6 caracteres.');
     if (dados.desc.length < 20) return falhar('Descreva o serviço com pelo menos 20 caracteres.');
     if (!dados.local || !dados.cidade) return falhar('Preencha endereço e cidade.');
-    if (!dados.dur) return falhar('Informe a duração e escolha se é em horas ou dias.');
-    if (dados.durUnidade === 'horas' && dados.durQtd > 24) return falhar('Acima de 24 horas, informe a duração em dias.');
-    if (dados.durUnidade === 'dias' && dados.durQtd > 60) return falhar('A duração máxima é de 60 dias.');
+    if (!dados.horaInicio || !dados.horaFim) return falhar('Escolha o horário de início e de término.');
+    if (OF.horasEntre(dados.horaInicio, dados.horaFim) < 1) return falhar('O horário de término deve ser ao menos 1 hora depois do início.');
+    if (dados.durUnidade === 'dias') {
+      var nDias = parseInt(durNumEl.value, 10);
+      if (!nDias || nDias < 1) return falhar('Informe quantos dias o serviço leva.');
+      if (nDias > 60) return falhar('A duração máxima é de 60 dias.');
+    }
+    if (!dados.dur) return falhar('Não foi possível calcular a duração. Revise o horário.');
     if (dados.valor < 30) return falhar('O valor livre da diarista deve ser de no mínimo R$ 30.');
     if (OF.digitos(dados.tel).length < 10) return falhar('Informe um WhatsApp válido com DDD.');
     if (!document.getElementById('v-aceite').checked) return falhar('É preciso aceitar os termos para publicar.');

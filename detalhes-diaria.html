@@ -52,10 +52,11 @@ document.addEventListener('of:pronto', function () {
 
     '<section class="card">' +
       '<div class="destaque-valor"><strong>' + OF.brl(d.valor) + '</strong>' +
-        '<span>livre para a diarista' + (d.dur ? ' · ' + OF.esc(d.dur) : '') + '</span></div>' +
+        '<span>livre para a diarista' + (d.dur ? ' · ' + OF.esc(OF.duracaoCompleta(d)) : '') + '</span></div>' +
       '<div class="tags">' +
         '<span class="tag accent">' + OF.esc(OF.labelTipo(d.tipo)) + '</span>' +
         (d.periodo ? '<span class="tag">Período: ' + OF.esc(d.periodo) + '</span>' : '') +
+        (OF.janelaTexto(d.horaInicio, d.horaFim) ? '<span class="tag accent">' + OF.esc(OF.janelaTexto(d.horaInicio, d.horaFim)) + '</span>' : '') +
         (d.criado ? '<span class="tag">Publicada em ' + OF.esc(OF.dataBR(d.criado)) + '</span>' : '') +
       '</div>' +
       '<h2 class="mt1" style="margin-top:1.2rem">Descrição do serviço</h2>' +
@@ -65,6 +66,11 @@ document.addEventListener('of:pronto', function () {
         '<div class="row"><dt>Local</dt><dd>' + OF.esc(d.local) + '</dd></div>' +
         (d.cidade ? '<div class="row"><dt>Cidade</dt><dd>' + OF.esc(d.cidade) + '</dd></div>' : '') +
         '<div class="row"><dt>Duração</dt><dd>' + OF.esc(d.dur || '—') + '</dd></div>' +
+        (OF.janelaTexto(d.horaInicio, d.horaFim)
+          ? '<div class="row"><dt>Horário</dt><dd>' + OF.esc(d.horaInicio) + ' às ' + OF.esc(d.horaFim) +
+            (d.durUnidade === 'dias' ? ' (cada dia)' : '') + '</dd></div>'
+          : '') +
+        (d.periodo ? '<div class="row"><dt>Período</dt><dd>' + OF.esc(d.periodo) + '</dd></div>' : '') +
         '<div class="row"><dt>Valor livre da diarista</dt><dd>' + OF.brl(r.livre) + '</dd></div>' +
         '<div class="row"><dt>WhatsApp</dt><dd>' + OF.esc(d.tel) + '</dd></div>' +
       '</dl>' +
@@ -139,7 +145,7 @@ document.addEventListener('of:pronto', function () {
   function textoMensagem() {
     var l = ['Olá, ' + d.nome + '! Vi a diária "' + titulo + '" no site OF — Ofício de Diárias.'];
     l.push('');
-    l.push('Serviço: ' + OF.labelTipo(d.tipo) + ' · ' + (d.dur || '') + ' · ' + OF.brl(d.valor) + ' livres');
+    l.push('Serviço: ' + OF.labelTipo(d.tipo) + ' · ' + OF.duracaoCompleta(d) + ' · ' + OF.brl(d.valor) + ' livres');
     l.push('Local: ' + d.local);
     l.push('');
     l.push('Meu nome: ' + (f.nome.value.trim() || '—'));

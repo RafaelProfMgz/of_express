@@ -14,7 +14,9 @@
     contatos: 'diarias_contatos',   // leads enviados pelas páginas de detalhe
     mensagens:'diarias_mensagens',  // mensagens para a administradora
     pagtos:   'diarias_pagamentos', // pagamentos simulados
+    comentarios: 'diarias_comentarios',
     seed:     'diarias_seed',
+    seedComentarios: 'diarias_seed_comentarios',
     cookies:  'diarias_cookies'
   };
 
@@ -55,7 +57,58 @@
   function formatarDuracao(qtd, unidade) {
     const n = Number(qtd) || 0;
     if (unidade === 'dias') return n + (n === 1 ? ' dia' : ' dias');
-    return n + (n === 1 ? ' hora' : ' horas');
+    const h = Math.floor(n), m = Math.round((n - h) * 60);
+    if (m === 0) return h + (h === 1 ? ' hora' : ' horas');
+    if (h === 0) return m + ' min';
+    return h + 'h' + String(m).padStart(2, '0');
+  }
+
+  /* Períodos do dia. Cada um já traz a janela de horário comercial padrão;
+     "Flexível" é o único em que o contratante escolhe início e fim na mão. */
+  const PERIODOS = [
+    { nome: 'Comercial',     rotulo: 'Comercial (08:00–18:00)',   inicio: '08:00', fim: '18:00' },
+    { nome: 'Manhã',         rotulo: 'Manhã (08:00–12:00)',       inicio: '08:00', fim: '12:00' },
+    { nome: 'Tarde',         rotulo: 'Tarde (13:00–18:00)',       inicio: '13:00', fim: '18:00' },
+    { nome: 'Noturno',       rotulo: 'Noturno (18:00–22:00)',     inicio: '18:00', fim: '22:00' },
+    { nome: 'Fim de semana', rotulo: 'Fim de semana (08:00–17:00)', inicio: '08:00', fim: '17:00' },
+    { nome: 'Flexível',      rotulo: 'Flexível (escolher horário)', inicio: null,  fim: null }
+  ];
+  function periodoInfo(nome) {
+    return PERIODOS.find(p => p.nome === nome) || PERIODOS[0];
+  }
+  function periodoFlexivel(nome) { return periodoInfo(nome).inicio === null; }
+
+  function minutosDe(hhmm) {
+    const m = /^(\d{1,2}):(\d{2})$/.exec(String(hhmm || '').trim());
+    if (!m) return null;
+    const h = Number(m[1]), min = Number(m[2]);
+    if (h > 23 || min > 59) return null;
+    return h * 60 + min;
+  }
+  /* Horas entre início e fim. Vira o dia se o fim for menor (ex.: 22:00 → 02:00). */
+  function horasEntre(inicio, fim) {
+    const a = minutosDe(inicio), b = minutosDe(fim);
+    if (a === null || b === null) return 0;
+    let diff = b - a;
+    if (diff <= 0) diff += 24 * 60;
+    return diff / 60;
+  }
+  /* Opções de hora de 30 em 30 minutos, cobrindo o dia todo. */
+  function opcoesHora() {
+    const lista = [];
+    for (let h = 0; h < 24; h++) for (const m of ['00', '30']) lista.push(String(h).padStart(2, '0') + ':' + m);
+    return lista;
+  }
+  function janelaTexto(inicio, fim) {
+    return (inicio && fim) ? inicio + '–' + fim : '';
+  }
+  /* Texto pronto de duração + janela, usado nos cards e nos detalhes. */
+  function duracaoCompleta(d) {
+    const partes = [];
+    if (d.dur) partes.push(d.dur);
+    const j = janelaTexto(d.horaInicio, d.horaFim);
+    if (j) partes.push(j);
+    return partes.join(' · ');
   }
   function ler(chave, padrao) {
     try {
@@ -173,15 +226,15 @@
   /* ---------- Diárias ---------- */
   const SEED = [
     { id: 1001, titulo: 'Limpeza residencial completa', tipo: 'residencial', nome: 'Ana P.', local: 'Av. Main, 450 — Centro', cidade: 'São Paulo', tel: '(11) 99999-0000',
-      desc: 'Apartamento de 2 quartos, 68m². Limpeza completa: cozinha, banheiros, quartos e sala. Produtos no local.', dur: '8 horas', durQtd: 8, durUnidade: 'horas', periodo: 'Comercial', valor: 160, destaque: true },
+      desc: 'Apartamento de 2 quartos, 68m². Limpeza completa: cozinha, banheiros, quartos e sala. Produtos no local.', dur: '8 horas', durQtd: 8, durUnidade: 'horas', periodo: 'Comercial', horaInicio: '08:00', horaFim: '16:00', valor: 160, destaque: true },
     { id: 1002, titulo: 'Limpeza pesada pós-obra', tipo: 'pos-obra', nome: 'Carlos M.', local: 'Rua das Flores, 120 — Jardim', cidade: 'São Paulo', tel: '(11) 98888-1111',
-      desc: 'Casa de 60m² recém-reformada. Retirada de resíduos finos, vidros e pisos. Precisa de disposição para trabalho pesado.', dur: '2 dias', durQtd: 2, durUnidade: 'dias', periodo: 'Comercial', valor: 250, destaque: true },
+      desc: 'Casa de 60m² recém-reformada. Retirada de resíduos finos, vidros e pisos. Precisa de disposição para trabalho pesado.', dur: '2 dias', durQtd: 2, durUnidade: 'dias', periodo: 'Comercial', horaInicio: '08:00', horaFim: '18:00', valor: 250, destaque: true },
     { id: 1003, titulo: 'Limpeza de escritório', tipo: 'comercial', nome: 'Fernanda L.', local: 'Rua B, 78 — Zona Norte', cidade: 'São Paulo', tel: '(11) 97777-2222',
-      desc: 'Escritório pequeno, 4 estações e 1 banheiro. Serviço rápido no fim do dia.', dur: '3 horas', durQtd: 3, durUnidade: 'horas', periodo: 'Noturno', valor: 90, destaque: true },
+      desc: 'Escritório pequeno, 4 estações e 1 banheiro. Serviço rápido no fim do dia.', dur: '3 horas', durQtd: 3, durUnidade: 'horas', periodo: 'Noturno', horaInicio: '19:00', horaFim: '22:00', valor: 90, destaque: true },
     { id: 1004, titulo: 'Organização de closet e armários', tipo: 'organizacao', nome: 'Mariana R.', local: 'Al. Santos, 900 — Jardins', cidade: 'São Paulo', tel: '(11) 96666-3333',
-      desc: 'Organização de closet, troca de estação e dobra de roupas. Trabalho detalhista.', dur: '6 horas', durQtd: 6, durUnidade: 'horas', periodo: 'Comercial', valor: 180, destaque: false },
+      desc: 'Organização de closet, troca de estação e dobra de roupas. Trabalho detalhista.', dur: '6 horas', durQtd: 6, durUnidade: 'horas', periodo: 'Comercial', horaInicio: '09:00', horaFim: '15:00', valor: 180, destaque: false },
     { id: 1005, titulo: 'Passadoria semanal', tipo: 'passadoria', nome: 'Roberto S.', local: 'Rua Aurora, 33 — Santa Cecília', cidade: 'São Paulo', tel: '(11) 95555-4444',
-      desc: 'Cesto de roupas de família de 4 pessoas. Uma vez por semana, dia flexível.', dur: '4 horas', durQtd: 4, durUnidade: 'horas', periodo: 'Flexível', valor: 120, destaque: false }
+      desc: 'Cesto de roupas de família de 4 pessoas. Uma vez por semana, dia flexível.', dur: '4 horas', durQtd: 4, durUnidade: 'horas', periodo: 'Flexível', horaInicio: '14:00', horaFim: '18:00', valor: 120, destaque: false }
   ];
   function diarias() {
     if (!localStorage.getItem(K.seed)) {          // popula a vitrine na 1ª visita
@@ -231,12 +284,112 @@
         <div class="tags">
           <span class="tag accent">${esc(labelTipo(d.tipo))}</span>
           <span class="tag">Contratante: ${esc(d.nome)}</span>
-          ${d.periodo ? `<span class="tag">${esc(d.periodo)}</span>` : ''}
+          ${d.periodo ? `<span class="tag">${esc(d.periodo)}${janelaTexto(d.horaInicio, d.horaFim) ? ' · ' + esc(janelaTexto(d.horaInicio, d.horaFim)) : ''}</span>` : ''}
         </div>
         <div class="acoes">
           <a href="detalhes-diaria.html?id=${encodeURIComponent(d.id)}" class="btn-small">Ver detalhes</a>
           <a href="detalhes-diaria.html?id=${encodeURIComponent(d.id)}#contato" class="btn-ghost-small">Entrar em contato</a>
         </div>
+      </article>`;
+  }
+
+  /* ---------- Comentários dos usuários ---------- */
+  const SEED_COMENTARIOS = [
+    { id: 2001, autor: 'ana.p', nome: 'Ana Paula', anonimo: false, nota: 5, papel: 'contratante',
+      diariaId: 1001, diariaTitulo: 'Limpeza residencial completa',
+      texto: 'Consegui a diarista em menos de um dia. Pagar a taxa direto no site e ter alguém acompanhando o combinado deu muito mais segurança.',
+      quando: '2026-08-18T14:20:00.000Z' },
+    { id: 2002, autor: 'carlos.m', nome: 'Carlos Mendes', anonimo: false, nota: 5, papel: 'contratante',
+      diariaId: 1002, diariaTitulo: 'Limpeza pesada pós-obra',
+      texto: 'Publiquei uma pós-obra que ninguém queria pegar. A administradora achou alguém e ainda ajudou a remarcar quando a obra atrasou.',
+      quando: '2026-08-02T09:05:00.000Z' },
+    { id: 2003, autor: 'mariana.r', nome: 'Mariana Rocha', anonimo: true, nota: 4, papel: 'diarista',
+      diariaId: 1004, diariaTitulo: 'Organização de closet e armários',
+      texto: 'Uso pelo celular e é bem direto. Só senti falta de mais vagas na minha região, mas o atendimento compensa.',
+      quando: '2026-07-29T18:40:00.000Z' },
+    { id: 2004, autor: 'roberto.s', nome: 'Roberto Silva', anonimo: false, nota: 5, papel: 'contratante',
+      diariaId: 1005, diariaTitulo: 'Passadoria semanal',
+      texto: 'Fechei passadoria semanal fixa. Um contato pelo WhatsApp e estava resolvido.',
+      quando: '2026-07-05T11:10:00.000Z' }
+  ];
+  const COMENTARIO_MIN = 20, COMENTARIO_MAX = 255;
+  const LABEL_PAPEL = { contratante: 'Contratou esta diária', diarista: 'Trabalhou nesta diária' };
+
+  function comentarios() {
+    if (!localStorage.getItem(K.seedComentarios)) {
+      const atuais = ler(K.comentarios, []);
+      gravar(K.comentarios, atuais.length ? atuais : SEED_COMENTARIOS.slice());
+      localStorage.setItem(K.seedComentarios, '1');
+    }
+    return ler(K.comentarios, []);
+  }
+  function criarComentario(c) {
+    const sess = sessao();
+    if (!sess) return { ok: false, erro: 'Você precisa estar logado para comentar.' };
+    const texto = String(c.texto || '').trim();
+    if (texto.length < COMENTARIO_MIN) return { ok: false, erro: 'O comentário precisa ter ao menos ' + COMENTARIO_MIN + ' caracteres.' };
+    if (texto.length > COMENTARIO_MAX) return { ok: false, erro: 'O comentário pode ter no máximo ' + COMENTARIO_MAX + ' caracteres.' };
+    const nota = Number(c.nota);
+    if (!(nota >= 1 && nota <= 5)) return { ok: false, erro: 'Escolha de 1 a 5 estrelas.' };
+    if (c.papel !== 'contratante' && c.papel !== 'diarista') return { ok: false, erro: 'Diga se você contratou ou trabalhou nesta diária.' };
+
+    const u = usuarioAtual() || {};
+    const lista = comentarios();
+    const novo = {
+      id: idNovo(),
+      autor: sess.user,
+      nome: u.nome || sess.nome || sess.user,
+      anonimo: !!c.anonimo,
+      nota: nota,
+      papel: c.papel,
+      diariaId: c.diariaId || null,
+      diariaTitulo: String(c.diariaTitulo || '').trim() || 'Diária não informada',
+      texto: texto,
+      quando: new Date().toISOString()
+    };
+    lista.unshift(novo);
+    if (!gravar(K.comentarios, lista)) return { ok: false, erro: 'Falha ao salvar o comentário.' };
+    return { ok: true, comentario: novo };
+  }
+  function removerComentario(id) {
+    const n = Number(id);
+    gravar(K.comentarios, comentarios().filter(c => Number(c.id) !== n));
+  }
+  function jaComentou(user) {
+    return comentarios().some(c => c.autor === user);
+  }
+  function mediaNotas() {
+    const l = comentarios();
+    if (!l.length) return 0;
+    return l.reduce((s, c) => s + (Number(c.nota) || 0), 0) / l.length;
+  }
+  function estrelas(nota) {
+    const n = Math.max(0, Math.min(5, Math.round(Number(nota) || 0)));
+    return '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n);
+  }
+  /* Card de comentário — usado na home, na página de comentários e no admin. */
+  function cardComentario(c, opcoes) {
+    const o = opcoes || {};
+    const nome = c.anonimo ? 'Usuário anônimo' : (c.nome || c.autor);
+    const inic = c.anonimo ? '?' : iniciais(nome);
+    return `
+      <article class="comentario" data-id="${esc(c.id)}">
+        <div class="cab">
+          <div class="av${c.anonimo ? ' anon' : ''}" aria-hidden="true">${esc(inic)}</div>
+          <div>
+            <div class="nome">${esc(nome)}${c.anonimo ? ' <span class="tag">anônimo</span>' : ''}</div>
+            <div class="quando">${esc(dataBR(c.quando))}</div>
+          </div>
+          <div class="estrelas" style="margin-left:auto" aria-label="${esc(c.nota)} de 5 estrelas">${estrelas(c.nota)}</div>
+        </div>
+        <p class="texto">${esc(c.texto)}</p>
+        <div class="tags">
+          <span class="tag">${esc(LABEL_PAPEL[c.papel] || '—')}</span>
+          ${c.diariaId ? `<a class="tag accent" href="detalhes-diaria.html?id=${encodeURIComponent(c.diariaId)}">${esc(c.diariaTitulo)}</a>`
+                       : `<span class="tag">${esc(c.diariaTitulo)}</span>`}
+          ${o.mostrarAutor && c.anonimo ? `<span class="tag">real: @${esc(c.autor)}</span>` : ''}
+        </div>
+        ${o.podeExcluir ? `<div class="acoes"><button type="button" class="btn-ghost-small" data-excluir-coment="${esc(c.id)}">Excluir comentário</button></div>` : ''}
       </article>`;
   }
 
@@ -339,6 +492,7 @@
                 <li><a href="index.html">Home</a></li>
                 <li><a href="diarias.html">Diárias</a></li>
                 <li><a href="cadastrar-diaria.html">Publicar diária</a></li>
+                <li><a href="comentarios.html">Comentários</a></li>
                 <li><a href="perfil.html">Meu perfil</a></li>
               </ul>
             </div>
@@ -734,6 +888,12 @@
     CFG: CFG, K: K, TIPOS: TIPOS, LABEL_TIPO: LABEL_TIPO,
     esc: esc, brl: brl, taxa: taxa, resumoValores: resumoValores,
     UNIDADES_DUR: UNIDADES_DUR, formatarDuracao: formatarDuracao,
+    PERIODOS: PERIODOS, periodoInfo: periodoInfo, periodoFlexivel: periodoFlexivel,
+    opcoesHora: opcoesHora, horasEntre: horasEntre, minutosDe: minutosDe,
+    janelaTexto: janelaTexto, duracaoCompleta: duracaoCompleta,
+    COMENTARIO_MIN: COMENTARIO_MIN, COMENTARIO_MAX: COMENTARIO_MAX, LABEL_PAPEL: LABEL_PAPEL,
+    comentarios: comentarios, criarComentario: criarComentario, removerComentario: removerComentario,
+    jaComentou: jaComentou, mediaNotas: mediaNotas, estrelas: estrelas, cardComentario: cardComentario,
     digitos: digitos, waNumero: waNumero,
     dataBR: dataBR, iniciais: iniciais, idNovo: idNovo, labelTipo: labelTipo,
     users: users, sessao: sessao, logado: logado, ehAdmin: ehAdmin,

@@ -134,7 +134,9 @@ document.addEventListener('of:pronto', function () {
     els.cidade.insertAdjacentHTML('beforeend', '<option value="' + OF.esc(c) + '">' + OF.esc(c) + '</option>');
   });
   unicos('periodo').forEach(function (p) {
-    els.periodo.insertAdjacentHTML('beforeend', '<option value="' + OF.esc(p) + '">' + OF.esc(p) + '</option>');
+    var info = OF.periodoInfo(p);
+    var rot = OF.periodoFlexivel(p) ? p : p + ' (' + info.inicio + '–' + info.fim + ')';
+    els.periodo.insertAdjacentHTML('beforeend', '<option value="' + OF.esc(p) + '">' + OF.esc(rot) + '</option>');
   });
 
   // Pré-filtro por URL: diarias.html?tipo=pos-obra

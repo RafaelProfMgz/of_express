@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="description" content="Comentários de quem contratou ou trabalhou em diárias pelo OF — Ofício de Diárias.">
+<title>Comentários — OF</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  /* Seletor de estrelas */
+  .notas{display:flex;flex-direction:row-reverse;justify-content:flex-end;gap:.15rem;margin-top:.25rem}
+  .notas input{position:absolute;opacity:0;width:1px;height:1px}
+  .notas label{margin:0;cursor:pointer;font-size:2rem;line-height:1;color:#dcd9d2;transition:color .12s;padding:0 .05rem}
+  .notas label:hover,.notas label:hover ~ label,
+  .notas input:checked ~ label{color:var(--accent)}
+  .notas input:focus-visible + label{outline:2px solid var(--accent);outline-offset:2px;border-radius:.2rem}
+  .nota-texto{font-size:.82rem;color:var(--sub);font-weight:600;margin-top:.15rem}
+
+  .contador{font-size:.75rem;color:var(--sub);margin-top:.25rem;display:flex;justify-content:space-between;gap:1rem}
+  .contador.curto{color:#b45309}
+  .contador.cheio{color:#b91c1c;font-weight:600}
+
+  .resumo-notas{display:flex;align-items:center;gap:1rem;background:#fff;border:1px solid var(--line);
+    border-radius:var(--radius);padding:1rem;box-shadow:var(--shadow);margin-bottom:1rem}
+  .resumo-notas .media{font-family:var(--serif);font-size:2.2rem;line-height:1}
+  .resumo-notas .estrelas{font-size:1.05rem}
+  .resumo-notas .qtd{font-size:.8rem;color:var(--sub)}
+  .comentario .av.anon{background:var(--sub)}
+  .filtro-notas{display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:1rem}
+  .filtro-notas button{background:#fff;border:1px solid var(--line);border-radius:2rem;padding:.35rem .75rem;
+    font-family:inherit;font-weight:600;font-size:.8rem;cursor:pointer;color:var(--text)}
+  .filtro-notas button.on{background:var(--dark);border-color:var(--dark);color:#fff}
+</style>
+</head>
+<body data-pagina="comentarios">
+
+<div id="of-header"></div>
+
+<main class="wrap">
+  <div class="page-head">
+    <h1>Comentários</h1>
+    <p>Quem contratou e quem trabalhou contando como foi a experiência.</p>
+  </div>
+
+  <div id="resumo-notas"></div>
+
+  <!-- Formulário (só logado) -->
+  <section id="area-form" class="hidden">
+    <div class="card">
+      <h2>Deixar meu comentário</h2>
+      <p class="sub">Conte como foi a diária que você fez ou contratou. Seu comentário aparece na home do site.</p>
+
+      <form class="form" id="form-comentario" novalidate>
+        <div>
+          <label for="k-diaria">Sobre qual diária?</label>
+          <select id="k-diaria"></select>
+          <p class="field-help" id="diaria-ajuda"></p>
+        </div>
+
+        <div id="bloco-outra" class="hidden">
+          <label for="k-outra">Qual foi a diária?</label>
+          <input id="k-outra" type="text" maxlength="70" placeholder="Ex: Limpeza de apartamento no Centro">
+        </div>
+
+        <div>
+          <label for="k-papel">Sua participação</label>
+          <select id="k-papel">
+            <option value="contratante">Eu contratei esta diária</option>
+            <option value="diarista">Eu trabalhei nesta diária</option>
+          </select>
+        </div>
+
+        <div>
+          <span class="sr-only" id="lbl-nota">Nota de 1 a 5 estrelas</span>
+          <label aria-hidden="true">Sua nota</label>
+          <div class="notas" role="radiogroup" aria-labelledby="lbl-nota">
+            <input type="radio" name="nota" id="n5" value="5"><label for="n5" title="5 estrelas — excelente">★</label>
+            <input type="radio" name="nota" id="n4" value="4"><label for="n4" title="4 estrelas — bom">★</label>
+            <input type="radio" name="nota" id="n3" value="3"><label for="n3" title="3 estrelas — regular">★</label>
+            <input type="radio" name="nota" id="n2" value="2"><label for="n2" title="2 estrelas — ruim">★</label>
+            <input type="radio" name="nota" id="n1" value="1"><label for="n1" title="1 estrela — péssimo">★</label>
+          </div>
+          <p class="nota-texto" id="nota-texto">Toque nas estrelas para dar sua nota.</p>
+        </div>
+
+        <div>
+          <label for="k-texto">Seu comentário</label>
+          <textarea id="k-texto" rows="4" minlength="20" maxlength="255"
+            placeholder="O que funcionou bem, o que poderia melhorar, como foi o atendimento…"></textarea>
+          <div class="contador" id="contador">
+            <span id="contador-num">0 / 255 caracteres</span>
+            <span id="contador-min">mínimo 20</span>
+          </div>
+        </div>
+
+        <label class="check">
+          <input type="checkbox" id="k-anonimo">
+          <span><strong>Comentar como anônimo.</strong> Seu nome não aparece — no lugar dele o site mostra
+            "Usuário anônimo". A administradora continua vendo quem escreveu.</span>
+        </label>
+
+        <div id="k-erro" class="msg err hidden" role="alert"></div>
+        <div id="k-ok" class="msg ok hidden" role="status"></div>
+        <button type="submit" class="btn">Publicar comentário</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Convite para visitante -->
+  <section id="area-deslogado" class="hidden">
+    <div class="card">
+      <h2>Quer deixar seu comentário?</h2>
+      <p class="sub">Só quem tem conta pode comentar — assim cada comentário fica ligado a uma diária real. Ler é livre.</p>
+      <a href="login.html?proximo=comentarios.html" class="btn">Entrar</a>
+      <a href="cadastro.html?proximo=comentarios.html" class="btn btn-outline">Criar conta</a>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-lista">
+    <div class="section-title">
+      <h2 id="t-lista">O que estão dizendo</h2>
+      <span class="tag" id="conta-coment">0</span>
+    </div>
+    <div class="filtro-notas" id="filtro-notas" role="group" aria-label="Filtrar por nota"></div>
+    <div id="lista-comentarios" aria-live="polite"></div>
+  </section>
+</main>
+
+<div id="of-footer"></div>
+
+<script src="assets/app.js"></script>
+<script>
+document.addEventListener('of:pronto', function () {
+  var sess = OF.sessao();
+  var filtroNota = 0;
+
+  // ---------- Lista ----------
+  function pintarLista() {
+    var todos = OF.comentarios();
+    var visiveis = filtroNota ? todos.filter(function (c) { return Number(c.nota) === filtroNota; }) : todos;
+
+    document.getElementById('conta-coment').textContent =
+      todos.length + (todos.length === 1 ? ' comentário' : ' comentários');
+
+    // Resumo com média
+    if (todos.length) {
+      var media = OF.mediaNotas();
+      document.getElementById('resumo-notas').innerHTML =
+        '<div class="resumo-notas">' +
+          '<div><div class="media">' + media.toFixed(1).replace('.', ',') + '</div></div>' +
+          '<div><div class="estrelas" aria-label="média de ' + media.toFixed(1) + ' de 5">' + OF.estrelas(media) + '</div>' +
+          '<div class="qtd">média de ' + todos.length + (todos.length === 1 ? ' comentário' : ' comentários') + '</div></div>' +
+        '</div>';
+    } else {
+      document.getElementById('resumo-notas').innerHTML = '';
+    }
+
+    // Filtros por nota
+    var contagem = {};
+    todos.forEach(function (c) { contagem[c.nota] = (contagem[c.nota] || 0) + 1; });
+    var botoes = ['<button type="button" data-nota="0" class="' + (filtroNota === 0 ? 'on' : '') + '">Todas</button>'];
+    [5, 4, 3, 2, 1].forEach(function (n) {
+      if (contagem[n]) botoes.push('<button type="button" data-nota="' + n + '" class="' + (filtroNota === n ? 'on' : '') + '">' +
+        n + ' ★ (' + contagem[n] + ')</button>');
+    });
+    var fn = document.getElementById('filtro-notas');
+    fn.innerHTML = todos.length > 1 ? botoes.join('') : '';
+    fn.querySelectorAll('[data-nota]').forEach(function (b) {
+      b.addEventListener('click', function () { filtroNota = Number(b.dataset.nota); pintarLista(); });
+    });
+
+    var admin = OF.ehAdmin();
+    document.getElementById('lista-comentarios').innerHTML = visiveis.length
+      ? visiveis.map(function (c) {
+          return OF.cardComentario(c, { podeExcluir: admin, mostrarAutor: admin });
+        }).join('')
+      : '<div class="empty">' + (todos.length ? 'Nenhum comentário com essa nota.' : 'Ainda não há comentários. Seja o primeiro!') + '</div>';
+
+    // Exclusão pelo admin
+    document.querySelectorAll('[data-excluir-coment]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (!confirm('Excluir este comentário definitivamente?')) return;
+        OF.removerComentario(b.dataset.excluirComent);
+        pintarLista();
+      });
+    });
+  }
+
+  // ---------- Formulário ----------
+  if (!sess) {
+    document.getElementById('area-deslogado').classList.remove('hidden');
+    pintarLista();
+    return;
+  }
+  document.getElementById('area-form').classList.remove('hidden');
+
+  // Diárias relacionadas ao usuário: as que ele publicou + as que ele contatou
+  var minhas = OF.diarias().filter(function (d) { return d.autor === sess.user; });
+  var contatadas = OF.contatos()
+    .filter(function (k) { return k.diariaId; })
+    .map(function (k) { return OF.diaria(k.diariaId); })
+    .filter(function (d) { return d && d.autor !== sess.user; });
+
+  var vistas = {}, opcoes = [];
+  minhas.concat(contatadas).forEach(function (d) {
+    if (vistas[d.id]) return;
+    vistas[d.id] = true;
+    opcoes.push({ d: d, papel: d.autor === sess.user ? 'contratante' : 'diarista' });
+  });
+
+  var selDiaria = document.getElementById('k-diaria');
+  selDiaria.innerHTML =
+    opcoes.map(function (o) {
+      return '<option value="' + OF.esc(o.d.id) + '" data-papel="' + o.papel + '">' +
+        OF.esc(o.d.titulo || o.d.desc) + ' — ' + OF.brl(o.d.valor) + '</option>';
+    }).join('') +
+    '<option value="outra">Outra diária (não listada)</option>';
+
+  document.getElementById('diaria-ajuda').textContent = opcoes.length
+    ? 'Aparecem aqui as diárias que você publicou e aquelas em que você entrou em contato.'
+    : 'Você ainda não tem diárias no site. Escolha "Outra diária" e descreva qual foi.';
+
+  function aplicarDiaria() {
+    var outra = selDiaria.value === 'outra';
+    document.getElementById('bloco-outra').classList.toggle('hidden', !outra);
+    var op = selDiaria.options[selDiaria.selectedIndex];
+    if (!outra && op && op.dataset.papel) document.getElementById('k-papel').value = op.dataset.papel;
+  }
+  selDiaria.addEventListener('change', aplicarDiaria);
+  aplicarDiaria();
+
+  // Estrelas
+  var LEGENDA = { 1: 'Péssimo', 2: 'Ruim', 3: 'Regular', 4: 'Bom', 5: 'Excelente' };
+  document.querySelectorAll('.notas input').forEach(function (r) {
+    r.addEventListener('change', function () {
+      document.getElementById('nota-texto').textContent = r.value + ' de 5 — ' + LEGENDA[r.value];
+    });
+  });
+  function notaEscolhida() {
+    var m = document.querySelector('.notas input:checked');
+    return m ? Number(m.value) : 0;
+  }
+
+  // Contador de caracteres
+  var textoEl = document.getElementById('k-texto');
+  function pintarContador() {
+    var n = textoEl.value.trim().length;
+    var num = document.getElementById('contador-num');
+    var min = document.getElementById('contador-min');
+    var box = document.getElementById('contador');
+    num.textContent = n + ' / ' + OF.COMENTARIO_MAX + ' caracteres';
+    box.classList.toggle('curto', n > 0 && n < OF.COMENTARIO_MIN);
+    box.classList.toggle('cheio', n >= OF.COMENTARIO_MAX);
+    min.textContent = n < OF.COMENTARIO_MIN
+      ? 'faltam ' + (OF.COMENTARIO_MIN - n) + ' para o mínimo'
+      : (n >= OF.COMENTARIO_MAX ? 'limite atingido' : 'mínimo atingido ✓');
+  }
+  textoEl.addEventListener('input', pintarContador);
+  pintarContador();
+
+  document.getElementById('form-comentario').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var erro = document.getElementById('k-erro'), ok = document.getElementById('k-ok');
+    ok.classList.add('hidden');
+    function falhar(m) { erro.textContent = m; erro.classList.remove('hidden'); }
+
+    var outra = selDiaria.value === 'outra';
+    var titulo, id = null;
+    if (outra) {
+      titulo = document.getElementById('k-outra').value.trim();
+      if (titulo.length < 4) return falhar('Descreva em poucas palavras qual foi a diária.');
+    } else {
+      id = selDiaria.value;
+      var d = OF.diaria(id);
+      titulo = d ? (d.titulo || d.desc) : 'Diária não informada';
+    }
+
+    var r = OF.criarComentario({
+      diariaId: id,
+      diariaTitulo: titulo,
+      papel: document.getElementById('k-papel').value,
+      nota: notaEscolhida(),
+      anonimo: document.getElementById('k-anonimo').checked,
+      texto: textoEl.value
+    });
+    if (!r.ok) return falhar(r.erro);
+
+    erro.classList.add('hidden');
+    ok.innerHTML = '<strong>Comentário publicado.</strong> Ele já aparece na lista abaixo e na home do site.';
+    ok.classList.remove('hidden');
+    this.reset();
+    document.getElementById('nota-texto').textContent = 'Toque nas estrelas para dar sua nota.';
+    aplicarDiaria();
+    pintarContador();
+    filtroNota = 0;
+    pintarLista();
+    ok.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  pintarLista();
+});
+</script>
+</body>
+</html>

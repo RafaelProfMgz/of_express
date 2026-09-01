@@ -61,9 +61,13 @@
 
     <!-- Comentários -->
     <section aria-labelledby="t-coment">
-      <div class="section-title"><h2 id="t-coment">Comentários dos usuários</h2></div>
+      <div class="section-title">
+        <h2 id="t-coment">Comentários dos usuários</h2>
+        <a href="comentarios.html">Ver todos →</a>
+      </div>
+      <div id="resumo-notas"></div>
       <div id="lista-comentarios"></div>
-      <p class="small center">Quer deixar seu comentário? <a href="contato.html">Fale com a administradora</a>.</p>
+      <a href="comentarios.html" class="btn btn-outline" id="cta-comentar">Ver todos os comentários</a>
     </section>
 
   </div>
@@ -93,24 +97,24 @@ document.addEventListener('of:pronto', function () {
     ? destaque.map(OF.cardDiaria).join('')
     : '<div class="empty">Nenhuma diária publicada ainda. <a href="cadastrar-diaria.html">Seja o primeiro</a>.</div>';
 
-  // Comentários (fixos no MVP)
-  var comentarios = [
-    { nome: 'Ana Paula',   nota: 5, quando: 'há 2 semanas', texto: 'Consegui a diarista em menos de um dia. Pagar a taxa direto no site e ter alguém acompanhando o combinado deu muito mais segurança.' },
-    { nome: 'Carlos Mendes', nota: 5, quando: 'há 1 mês',   texto: 'Publiquei uma pós-obra que ninguém queria pegar. A administradora achou alguém e ainda ajudou a remarcar quando a obra atrasou.' },
-    { nome: 'Mariana Rocha', nota: 4, quando: 'há 1 mês',   texto: 'Uso pelo celular e é bem direto. Só senti falta de mais vagas na minha região, mas o atendimento compensa.' },
-    { nome: 'Roberto Silva', nota: 5, quando: 'há 2 meses', texto: 'Fechei passadoria semanal fixa. Um contato pelo WhatsApp e estava resolvido.' }
-  ];
-  document.getElementById('lista-comentarios').innerHTML = comentarios.map(function (c) {
-    var estrelas = '★★★★★'.slice(0, c.nota) + '☆☆☆☆☆'.slice(0, 5 - c.nota);
-    return '<article class="comentario">' +
-      '<div class="cab">' +
-        '<div class="av" aria-hidden="true">' + OF.esc(OF.iniciais(c.nome)) + '</div>' +
-        '<div><div class="nome">' + OF.esc(c.nome) + '</div><div class="quando">' + OF.esc(c.quando) + '</div></div>' +
-        '<div class="estrelas" style="margin-left:auto" aria-label="' + c.nota + ' de 5">' + estrelas + '</div>' +
-      '</div>' +
-      '<p class="texto">' + OF.esc(c.texto) + '</p>' +
-    '</article>';
-  }).join('');
+  // Comentários: os 3 mais recentes deixados pelos usuários
+  var todosComent = OF.comentarios();
+  document.getElementById('lista-comentarios').innerHTML = todosComent.length
+    ? todosComent.slice(0, 3).map(function (c) { return OF.cardComentario(c); }).join('')
+    : '<div class="empty">Ainda não há comentários. <a href="comentarios.html">Seja o primeiro</a>.</div>';
+
+  if (todosComent.length) {
+    var media = OF.mediaNotas();
+    document.getElementById('resumo-notas').innerHTML =
+      '<p class="small" style="margin-bottom:1rem">' +
+        '<span class="estrelas">' + OF.estrelas(media) + '</span> ' +
+        '<strong>' + media.toFixed(1).replace('.', ',') + ' de 5</strong> em ' +
+        todosComent.length + (todosComent.length === 1 ? ' comentário' : ' comentários') +
+      '</p>';
+  }
+  if (OF.logado()) {
+    document.getElementById('cta-comentar').textContent = 'Deixar meu comentário';
+  }
 });
 </script>
 </body>
