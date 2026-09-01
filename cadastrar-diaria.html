@@ -7,9 +7,14 @@
 <link rel="stylesheet" href="assets/style.css">
 <style>
   .resumo-taxa{background:var(--bg);border:1px solid var(--line);border-radius:.8rem;padding:.9rem;margin-top:.4rem}
-  .resumo-taxa .lin{display:flex;justify-content:space-between;font-size:.88rem;padding:.2rem 0}
-  .resumo-taxa .lin.total{border-top:1px dashed #d8d6cf;margin-top:.4rem;padding-top:.5rem;font-weight:800}
-  .resumo-taxa .obs{font-size:.75rem;color:var(--sub);margin-top:.5rem}
+  .resumo-taxa .lin{display:flex;justify-content:space-between;gap:1rem;font-size:.88rem;padding:.25rem 0}
+  .resumo-taxa .lin span:last-child{font-weight:600;white-space:nowrap}
+  .resumo-taxa .lin.custo{border-top:1px solid var(--line);margin-top:.35rem;padding-top:.5rem;font-weight:700}
+  .resumo-taxa .lin.agora{background:#fff;border:1px solid var(--accent-line);border-radius:.6rem;
+    margin-top:.6rem;padding:.6rem .7rem;font-weight:800;color:var(--accent-dark)}
+  .resumo-taxa .lin.agora span:last-child{font-size:1.05rem}
+  .resumo-taxa .obs{font-size:.75rem;color:var(--sub);margin-top:.6rem;line-height:1.5}
+  .resumo-taxa .rotulo small{display:block;font-weight:400;font-size:.73rem;color:var(--sub);margin-top:.1rem}
 </style>
 </head>
 <body data-pagina="cadastrar">
@@ -79,15 +84,24 @@
           </div>
         </div>
 
-        <div class="grid2">
-          <div>
-            <label for="v-dur">Duração *</label>
-            <input id="v-dur" type="text" placeholder="Ex: 1 dia (8h)" required>
+        <div>
+          <label for="v-dur-num">Duração *</label>
+          <div class="campo-composto">
+            <input id="v-dur-num" type="number" min="1" step="1" placeholder="8" required
+                   aria-label="Quantidade de duração">
+            <select id="v-dur-uni" aria-label="Unidade da duração">
+              <option value="horas" selected>horas</option>
+              <option value="dias">dias</option>
+            </select>
           </div>
-          <div>
-            <label for="v-valor">Valor do serviço (R$) *</label>
-            <input id="v-valor" type="number" min="30" step="10" placeholder="160" required>
-          </div>
+          <p class="field-help" id="dur-previa">Ex.: 8 horas, ou 2 dias.</p>
+        </div>
+
+        <div>
+          <label for="v-valor">Valor livre da diarista (R$) *</label>
+          <input id="v-valor" type="number" min="30" step="10" placeholder="150" required>
+          <p class="field-help">Quanto a diarista recebe <strong>limpo</strong> pelo serviço. Esse valor
+            você paga direto a ela — não passa pelo site. A taxa OF é somada por cima.</p>
         </div>
 
         <div class="grid2">
@@ -102,7 +116,7 @@
         </div>
 
         <div>
-          <label>Resumo da cobrança</label>
+          <label>Resumo dos valores</label>
           <div class="resumo-taxa" id="resumo-taxa" aria-live="polite"></div>
         </div>
 
@@ -176,22 +190,48 @@ document.addEventListener('of:pronto', function () {
 
   var valorEl = document.getElementById('v-valor');
   var descEl = document.getElementById('v-desc');
+  var durNumEl = document.getElementById('v-dur-num');
+  var durUniEl = document.getElementById('v-dur-uni');
 
   descEl.addEventListener('input', function () {
     document.getElementById('conta-desc').textContent = descEl.value.length;
   });
 
-  function taxaAtual() { return OF.taxa(parseFloat(valorEl.value) || 0); }
+  // Duração: monta o texto final a partir do número + unidade
+  function duracaoTexto() {
+    var n = parseInt(durNumEl.value, 10);
+    if (!n || n < 1) return '';
+    return OF.formatarDuracao(n, durUniEl.value);
+  }
+  function pintarDuracao() {
+    var t = duracaoTexto();
+    document.getElementById('dur-previa').textContent =
+      t ? 'Vai aparecer na diária como: ' + t : 'Ex.: 8 horas, ou 2 dias.';
+  }
+  durNumEl.addEventListener('input', pintarDuracao);
+  durUniEl.addEventListener('change', pintarDuracao);
+  pintarDuracao();
 
+  // Valores: o campo é o valor LIVRE da diarista; a taxa entra por cima
   function pintarResumo() {
-    var valor = parseFloat(valorEl.value) || 0;
-    var t = taxaAtual();
+    var r = OF.resumoValores(valorEl.value);
+    if (r.livre <= 0) {
+      document.getElementById('resumo-taxa').innerHTML =
+        '<p class="obs" style="margin:0">Informe o <strong>valor livre da diarista</strong> acima para ver a taxa, ' +
+        'o custo total da diária e quanto você paga agora no site.</p>';
+      return;
+    }
     document.getElementById('resumo-taxa').innerHTML =
-      '<div class="lin"><span>Valor do serviço (pago pelo contratante à diarista)</span><span>' + OF.brl(valor) + '</span></div>' +
-      '<div class="lin"><span>Taxa de intermediação OF</span><span>' + OF.brl(t) + '</span></div>' +
-      '<div class="lin total"><span>Você paga agora</span><span>' + OF.brl(t) + '</span></div>' +
-      '<p class="obs">Regra da taxa: R$ 20 fixos para serviços até R$ 150; acima disso, 10% do valor (mínimo R$ 10). ' +
-      'O valor do serviço é combinado direto com a diarista e não passa pelo site.</p>';
+      '<div class="lin"><span class="rotulo">Valor livre da diarista' +
+        '<small>Pago direto a ela, fora do site</small></span><span>' + OF.brl(r.livre) + '</span></div>' +
+      '<div class="lin"><span class="rotulo">Taxa de intermediação OF' +
+        '<small>' + (r.livre <= 150 ? 'R$ 20 fixos (serviço até R$ 150)' : '10% do valor livre') + '</small></span>' +
+        '<span>+ ' + OF.brl(r.taxa) + '</span></div>' +
+      '<div class="lin custo"><span>Custo total da diária para você</span><span>' + OF.brl(r.total) + '</span></div>' +
+      '<div class="lin agora"><span>Você paga agora no site</span><span>' + OF.brl(r.taxa) + '</span></div>' +
+      '<p class="obs">No site você paga <strong>somente a taxa de ' + OF.brl(r.taxa) + '</strong>. ' +
+      'Os ' + OF.brl(r.livre) + ' do serviço você acerta direto com a diarista, e ela recebe esse valor limpo. ' +
+      'A taxa da operadora de pagamento sai da nossa parte — você não paga nada além do que está aqui.</p>';
   }
   valorEl.addEventListener('input', pintarResumo);
   pintarResumo();
@@ -209,7 +249,9 @@ document.addEventListener('of:pronto', function () {
       desc: descEl.value.trim(),
       local: document.getElementById('v-local').value.trim(),
       cidade: document.getElementById('v-cidade').value.trim(),
-      dur: document.getElementById('v-dur').value.trim(),
+      dur: duracaoTexto(),
+      durQtd: parseInt(durNumEl.value, 10) || 0,
+      durUnidade: durUniEl.value,
       valor: parseFloat(valorEl.value) || 0,
       nome: document.getElementById('v-nome').value.trim(),
       tel: document.getElementById('v-tel').value.trim(),
@@ -218,20 +260,30 @@ document.addEventListener('of:pronto', function () {
 
     if (dados.titulo.length < 6) return falhar('O título precisa ter ao menos 6 caracteres.');
     if (dados.desc.length < 20) return falhar('Descreva o serviço com pelo menos 20 caracteres.');
-    if (!dados.local || !dados.cidade || !dados.dur) return falhar('Preencha endereço, cidade e duração.');
-    if (dados.valor < 30) return falhar('O valor do serviço deve ser de no mínimo R$ 30.');
+    if (!dados.local || !dados.cidade) return falhar('Preencha endereço e cidade.');
+    if (!dados.dur) return falhar('Informe a duração e escolha se é em horas ou dias.');
+    if (dados.durUnidade === 'horas' && dados.durQtd > 24) return falhar('Acima de 24 horas, informe a duração em dias.');
+    if (dados.durUnidade === 'dias' && dados.durQtd > 60) return falhar('A duração máxima é de 60 dias.');
+    if (dados.valor < 30) return falhar('O valor livre da diarista deve ser de no mínimo R$ 30.');
     if (OF.digitos(dados.tel).length < 10) return falhar('Informe um WhatsApp válido com DDD.');
     if (!document.getElementById('v-aceite').checked) return falhar('É preciso aceitar os termos para publicar.');
     erro.classList.add('hidden');
 
-    var taxa = OF.taxa(dados.valor);
+    var r = OF.resumoValores(dados.valor);
 
     OF.pagamento.abrir({
       titulo: 'Taxa de publicação',
-      descricao: 'Escolha como pagar a taxa de intermediação para publicar "' + dados.titulo + '".',
-      itens: [
-        { label: 'Taxa de intermediação OF', valor: taxa }
+      descricao: 'Você paga só a taxa. O valor livre da diarista não passa pelo site.',
+      infos: [
+        { label: 'Valor livre da diarista (fora do site)', valor: r.livre },
+        { label: 'Custo total da diária', valor: r.total }
       ],
+      itens: [
+        { label: 'Taxa de intermediação OF', valor: r.taxa }
+      ],
+      rotuloTotal: 'Você paga agora',
+      nota: 'A diarista recebe os ' + OF.brl(r.livre) + ' limpos, direto de você. ' +
+            'A taxa da operadora de pagamento sai da nossa parte.',
       onPago: function (pg) {
         // Pagamento aprovado: só agora a diária entra no ar
         var nova = OF.criarDiaria(Object.assign({}, dados, {

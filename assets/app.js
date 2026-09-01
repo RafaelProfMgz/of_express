@@ -42,6 +42,21 @@
     const v = Number(valor) || 0;
     return v <= 150 ? 20 : Math.max(10, v * 0.10);
   }
+  /* Quebra de valores de uma diária.
+     valorLivre = o que a diarista recebe, pago direto a ela (não passa pelo site).
+     taxa       = intermediação OF, única coisa cobrada no checkout.
+     total      = quanto a diária custa ao contratante somando as duas partes. */
+  function resumoValores(valorLivre) {
+    const livre = Number(valorLivre) || 0;
+    const t = taxa(livre);
+    return { livre: livre, taxa: t, total: livre + t };
+  }
+  const UNIDADES_DUR = [['horas', 'horas'], ['dias', 'dias']];
+  function formatarDuracao(qtd, unidade) {
+    const n = Number(qtd) || 0;
+    if (unidade === 'dias') return n + (n === 1 ? ' dia' : ' dias');
+    return n + (n === 1 ? ' hora' : ' horas');
+  }
   function ler(chave, padrao) {
     try {
       const raw = localStorage.getItem(chave);
@@ -158,15 +173,15 @@
   /* ---------- Diárias ---------- */
   const SEED = [
     { id: 1001, titulo: 'Limpeza residencial completa', tipo: 'residencial', nome: 'Ana P.', local: 'Av. Main, 450 — Centro', cidade: 'São Paulo', tel: '(11) 99999-0000',
-      desc: 'Apartamento de 2 quartos, 68m². Limpeza completa: cozinha, banheiros, quartos e sala. Produtos no local.', dur: '1 dia (8h)', periodo: 'Comercial', valor: 160, destaque: true },
+      desc: 'Apartamento de 2 quartos, 68m². Limpeza completa: cozinha, banheiros, quartos e sala. Produtos no local.', dur: '8 horas', durQtd: 8, durUnidade: 'horas', periodo: 'Comercial', valor: 160, destaque: true },
     { id: 1002, titulo: 'Limpeza pesada pós-obra', tipo: 'pos-obra', nome: 'Carlos M.', local: 'Rua das Flores, 120 — Jardim', cidade: 'São Paulo', tel: '(11) 98888-1111',
-      desc: 'Casa de 60m² recém-reformada. Retirada de resíduos finos, vidros e pisos. Precisa de disposição para trabalho pesado.', dur: '2 dias', periodo: 'Comercial', valor: 250, destaque: true },
+      desc: 'Casa de 60m² recém-reformada. Retirada de resíduos finos, vidros e pisos. Precisa de disposição para trabalho pesado.', dur: '2 dias', durQtd: 2, durUnidade: 'dias', periodo: 'Comercial', valor: 250, destaque: true },
     { id: 1003, titulo: 'Limpeza de escritório', tipo: 'comercial', nome: 'Fernanda L.', local: 'Rua B, 78 — Zona Norte', cidade: 'São Paulo', tel: '(11) 97777-2222',
-      desc: 'Escritório pequeno, 4 estações e 1 banheiro. Serviço rápido no fim do dia.', dur: '3 horas', periodo: 'Noturno', valor: 90, destaque: true },
+      desc: 'Escritório pequeno, 4 estações e 1 banheiro. Serviço rápido no fim do dia.', dur: '3 horas', durQtd: 3, durUnidade: 'horas', periodo: 'Noturno', valor: 90, destaque: true },
     { id: 1004, titulo: 'Organização de closet e armários', tipo: 'organizacao', nome: 'Mariana R.', local: 'Al. Santos, 900 — Jardins', cidade: 'São Paulo', tel: '(11) 96666-3333',
-      desc: 'Organização de closet, troca de estação e dobra de roupas. Trabalho detalhista.', dur: '1 dia (6h)', periodo: 'Comercial', valor: 180, destaque: false },
+      desc: 'Organização de closet, troca de estação e dobra de roupas. Trabalho detalhista.', dur: '6 horas', durQtd: 6, durUnidade: 'horas', periodo: 'Comercial', valor: 180, destaque: false },
     { id: 1005, titulo: 'Passadoria semanal', tipo: 'passadoria', nome: 'Roberto S.', local: 'Rua Aurora, 33 — Santa Cecília', cidade: 'São Paulo', tel: '(11) 95555-4444',
-      desc: 'Cesto de roupas de família de 4 pessoas. Uma vez por semana, dia flexível.', dur: '4 horas', periodo: 'Flexível', valor: 120, destaque: false }
+      desc: 'Cesto de roupas de família de 4 pessoas. Uma vez por semana, dia flexível.', dur: '4 horas', durQtd: 4, durUnidade: 'horas', periodo: 'Flexível', valor: 120, destaque: false }
   ];
   function diarias() {
     if (!localStorage.getItem(K.seed)) {          // popula a vitrine na 1ª visita
@@ -210,7 +225,7 @@
             <h3>${esc(d.titulo || d.desc)}</h3>
             <div class="meta">${esc(d.local)}${d.cidade ? ' · ' + esc(d.cidade) : ''}</div>
           </div>
-          <div class="preco">${brl(d.valor)}<small>${esc(d.dur || '')}</small></div>
+          <div class="preco">${brl(d.valor)}<small>livre${d.dur ? ' · ' + esc(d.dur) : ''}</small></div>
         </div>
         <p class="desc">${esc(String(d.desc || '').slice(0, 120))}${String(d.desc || '').length > 120 ? '…' : ''}</p>
         <div class="tags">
@@ -380,7 +395,7 @@
     function total() { return ctx.itens.reduce((s, i) => s + (Number(i.valor) || 0), 0); }
 
     function abrir(opcoes) {
-      ctx = Object.assign({ titulo: 'Pagamento', descricao: '', itens: [], onSucesso: null, onCancelar: null }, opcoes);
+      ctx = Object.assign({ titulo: 'Pagamento', descricao: '', itens: [], infos: [], rotuloTotal: 'Total', nota: '', onSucesso: null, onCancelar: null }, opcoes);
       if (!modal) {
         modal = document.createElement('div');
         modal.className = 'modal';
@@ -416,10 +431,15 @@
         <p class="modal-sub">${esc(sub)}</p>`;
     }
     function resumo() {
+      const infos = (ctx.infos || []).map(i =>
+        `<div class="lin info"><span>${esc(i.label)}</span><span>${i.valor == null ? esc(i.texto || '') : brl(i.valor)}</span></div>`
+      ).join('');
       return `
         <div class="resumo">
+          ${infos}
           ${ctx.itens.map(i => `<div class="lin"><span>${esc(i.label)}</span><span>${brl(i.valor)}</span></div>`).join('')}
-          <div class="lin total"><span>Total</span><span>${brl(total())}</span></div>
+          <div class="lin total"><span>${esc(ctx.rotuloTotal || 'Total')}</span><span>${brl(total())}</span></div>
+          ${ctx.nota ? `<p class="obs">${esc(ctx.nota)}</p>` : ''}
         </div>`;
     }
 
@@ -712,7 +732,9 @@
   /* ---------- API pública ---------- */
   window.OF = {
     CFG: CFG, K: K, TIPOS: TIPOS, LABEL_TIPO: LABEL_TIPO,
-    esc: esc, brl: brl, taxa: taxa, digitos: digitos, waNumero: waNumero,
+    esc: esc, brl: brl, taxa: taxa, resumoValores: resumoValores,
+    UNIDADES_DUR: UNIDADES_DUR, formatarDuracao: formatarDuracao,
+    digitos: digitos, waNumero: waNumero,
     dataBR: dataBR, iniciais: iniciais, idNovo: idNovo, labelTipo: labelTipo,
     users: users, sessao: sessao, logado: logado, ehAdmin: ehAdmin,
     login: login, cadastrar: cadastrar, sair: sair,

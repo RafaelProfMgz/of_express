@@ -41,7 +41,7 @@ document.addEventListener('of:pronto', function () {
     return;
   }
 
-  var taxa = OF.taxa(d.valor);
+  var r = OF.resumoValores(d.valor);
   var titulo = d.titulo || d.desc;
   document.title = titulo + ' — OF';
 
@@ -51,7 +51,8 @@ document.addEventListener('of:pronto', function () {
       '<p>' + OF.esc(d.local) + (d.cidade ? ' · ' + OF.esc(d.cidade) : '') + '</p></div>' +
 
     '<section class="card">' +
-      '<div class="destaque-valor"><strong>' + OF.brl(d.valor) + '</strong><span>' + OF.esc(d.dur || '') + '</span></div>' +
+      '<div class="destaque-valor"><strong>' + OF.brl(d.valor) + '</strong>' +
+        '<span>livre para a diarista' + (d.dur ? ' · ' + OF.esc(d.dur) : '') + '</span></div>' +
       '<div class="tags">' +
         '<span class="tag accent">' + OF.esc(OF.labelTipo(d.tipo)) + '</span>' +
         (d.periodo ? '<span class="tag">Período: ' + OF.esc(d.periodo) + '</span>' : '') +
@@ -64,7 +65,7 @@ document.addEventListener('of:pronto', function () {
         '<div class="row"><dt>Local</dt><dd>' + OF.esc(d.local) + '</dd></div>' +
         (d.cidade ? '<div class="row"><dt>Cidade</dt><dd>' + OF.esc(d.cidade) + '</dd></div>' : '') +
         '<div class="row"><dt>Duração</dt><dd>' + OF.esc(d.dur || '—') + '</dd></div>' +
-        '<div class="row"><dt>Valor do serviço</dt><dd>' + OF.brl(d.valor) + '</dd></div>' +
+        '<div class="row"><dt>Valor livre da diarista</dt><dd>' + OF.brl(r.livre) + '</dd></div>' +
         '<div class="row"><dt>WhatsApp</dt><dd>' + OF.esc(d.tel) + '</dd></div>' +
       '</dl>' +
     '</section>' +
@@ -103,8 +104,14 @@ document.addEventListener('of:pronto', function () {
 
     '<section class="card">' +
       '<h2>Como funciona o pagamento</h2>' +
-      '<p class="sub">O valor do serviço é combinado direto com o contratante. A taxa de intermediação desta diária (' +
-        OF.brl(taxa) + ') já foi paga por quem publicou.</p>' +
+      '<dl class="dl">' +
+        '<div class="row"><dt>A diarista recebe</dt><dd>' + OF.brl(r.livre) + ' limpos</dd></div>' +
+        '<div class="row"><dt>Taxa OF (já paga)</dt><dd>' + OF.brl(r.taxa) + '</dd></div>' +
+        '<div class="row"><dt>Custo total ao contratante</dt><dd>' + OF.brl(r.total) + '</dd></div>' +
+      '</dl>' +
+      '<p class="sub" style="margin-top:.9rem">Os ' + OF.brl(r.livre) + ' são pagos direto pelo contratante à diarista e ' +
+        '<strong>não passam pelo site</strong> — nada é descontado desse valor. A taxa de intermediação de ' +
+        OF.brl(r.taxa) + ' já foi paga por quem publicou a diária.</p>' +
       '<a href="contato.html" class="btn btn-outline">Problema com esta diária? Fale com a admin</a>' +
     '</section>' +
 
@@ -132,7 +139,7 @@ document.addEventListener('of:pronto', function () {
   function textoMensagem() {
     var l = ['Olá, ' + d.nome + '! Vi a diária "' + titulo + '" no site OF — Ofício de Diárias.'];
     l.push('');
-    l.push('Serviço: ' + OF.labelTipo(d.tipo) + ' · ' + (d.dur || '') + ' · ' + OF.brl(d.valor));
+    l.push('Serviço: ' + OF.labelTipo(d.tipo) + ' · ' + (d.dur || '') + ' · ' + OF.brl(d.valor) + ' livres');
     l.push('Local: ' + d.local);
     l.push('');
     l.push('Meu nome: ' + (f.nome.value.trim() || '—'));

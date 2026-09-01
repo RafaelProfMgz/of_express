@@ -40,8 +40,36 @@ python3 -m http.server 8000
 
 ## Regras de negócio
 
-- **Taxa de intermediação:** R$ 20 fixos para serviços de até R$ 150; acima disso,
-  10% do valor com mínimo de R$ 10 (`OF.taxa`).
+### Valores
+
+Cada diária tem dois valores separados (`OF.resumoValores(valorLivre)`):
+
+| | O que é | Quem paga | Passa pelo site? |
+|---|---|---|---|
+| **Valor livre** | o que a diarista recebe limpo | contratante → diarista | não |
+| **Taxa OF** | intermediação, somada por cima | contratante → site | sim, no checkout |
+
+- **Taxa:** R$ 20 fixos para valor livre de até R$ 150; acima disso, 10% do valor
+  livre com mínimo de R$ 10 (`OF.taxa`).
+- O checkout cobra **somente a taxa**. Custos da operadora de pagamento saem da
+  parte do site — não são repassados nem ao contratante nem à diarista.
+- Exemplo: valor livre R$ 150 → taxa R$ 20 → custo total R$ 170, dos quais
+  R$ 150 vão integralmente à diarista e R$ 20 são pagos no site.
+
+> ⚠️ **Degrau conhecido na regra:** como a faixa fixa é R$ 20 e a de cima é 10%,
+> a taxa *cai* ao passar de R$ 150 (R$ 151 → R$ 15,10) e só volta a R$ 20 em
+> R$ 200. Para eliminar isso, trocar em `assets/app.js`:
+> `return v <= 150 ? 20 : Math.max(10, v * 0.10);` por
+> `return Math.max(20, v * 0.10);`
+
+### Duração
+
+Número + unidade (`horas` ou `dias`). Gravada em `durQtd` + `durUnidade` e também
+formatada em `dur` para exibição (`OF.formatarDuracao` — cuida do singular/plural:
+`1 hora`, `8 horas`, `1 dia`, `2 dias`). Limites: até 24 horas ou até 60 dias.
+
+### Contas
+
 - **Publicar exige conta** com perfil *Contratante* ou *ambos*.
 - **Ver e contatar não exige conta.**
 - A diária só entra no ar **depois** do pagamento aprovado.
