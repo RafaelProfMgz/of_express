@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>Admin — Diárias</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Playfair+Display:wght@700&display=swap');
+  :root{--bg:#f6f5f0;--card:#fff;--accent:#d97706;--text:#2a2a2a;--sub:#6b6b6b;--line:#ebeae5;--dark:#2a2a2a;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.45;font-size:16px;}
+  a{color:var(--accent);text-decoration:none}
+  .wrap{width:min(480px,95vw);margin-inline:auto;padding:1.2rem 1rem 3rem}
+  header{background:linear-gradient(135deg,var(--dark) 0%,#4a3f2a 100%);color:#fff;padding:2.5rem 1rem 1.5rem;border-radius:0 0 1rem 1rem;margin:-1.2rem -1rem 1.5rem}
+  header h1{font-family:'Playfair Display',Georgia,serif;font-size:1.5rem;margin-bottom:.25rem}
+  header p{opacity:.85;font-size:.9rem;color:#ddd}
+  .nav{position:sticky;top:0;z-index:10;background:rgba(246,245,240,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:.6rem 0;margin-bottom:1rem}
+  .nav-inner{display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:.85rem}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:1rem;padding:1.1rem;margin-bottom:.75rem;box-shadow:0 2px 10px rgba(0,0,0,.03)}
+  .card h3{font-size:1rem;margin-bottom:.25rem}
+  .card .meta{font-size:.85rem;color:var(--sub)}
+  .btn{display:block;width:100%;text-align:center;background:var(--accent);color:#fff;padding:.85rem .9rem;border-radius:.7rem;font-weight:700;font-size:1rem;border:none;margin-top:.5rem;cursor:pointer;box-shadow:0 6px 18px rgba(217,119,6,.25)}
+  .btn:active{transform:scale(.98)}
+  .btn-red{background:#dc2626}
+  .btn-red:active{transform:scale(.98)}
+  .badge-admin{display:inline-block;background:var(--dark);color:#fff;padding:.25rem .7rem;border-radius:.5rem;font-size:.75rem;font-weight:700;margin-bottom:.5rem}
+  .small{font-size:.78rem;color:var(--sub)}
+  footer{text-align:center;padding:2rem 0;color:var(--sub);font-size:.85rem;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="wrap nav-inner">
+    <a href="index.html" style="font-family:'Playfair Display',Georgia,serif;font-size:1.05rem;color:var(--text);font-weight:700">Diárias</a>
+    <div style="display:flex;gap:.9rem;align-items:center">
+      <a href="vagas.html">Vagas</a>
+      <a href="login.html">Entrar</a>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="wrap">
+    <div class="badge-admin">PAINEL DO ADMIN</div>
+    <h1>Administração de vagas</h1>
+    <p>Lista de vagas publicadas. Você pode excluir qualquer uma.</p>
+  </div>
+</header>
+
+<main class="wrap" id="admin-main">
+
+  <div id="check-login" style="padding:2rem 0;text-align:center">
+    <p>Verificando acesso...</p>
+  </div>
+
+  <div id="conteudo" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <span id="count" style="font-weight:700;font-size:1.1rem">0 vagas</span>
+      <button onclick="sair()" class="btn" style="max-width:fit-content;padding:.5rem .8rem;font-size:.85rem;background:#2a2a2a">Sair</button>
+    </div>
+    <div id="lista-admin"></div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><strong>Admin.</strong> User: admin / admin · <a href="vagas.html">Vagas</a> · <a href="login.html">Login</a></p>
+  </div>
+</footer>
+
+<script>
+let logged = JSON.parse(localStorage.getItem('diarias_logged') || 'null');
+let vagas = JSON.parse(localStorage.getItem('diarias_vagas') || '[]');
+
+function saveVagas(){ localStorage.setItem('diarias_vagas', JSON.stringify(vagas)); }
+function esc(t){ const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
+
+function check(){
+  const main = document.getElementById('admin-main');
+  const checkDiv = document.getElementById('check-login');
+  const content = document.getElementById('conteudo');
+  if(!logged || logged.tipo !== 'admin'){
+    checkDiv.innerHTML = '<p style="font-size:.95rem;color:var(--sub);margin-top:1rem">Você precisa estar logado como admin.</p><a href="login.html" class="btn">Ir para login</a>';
+    return;
+  }
+  checkDiv.style.display='none';
+  content.style.display='block';
+  render();
+}
+
+function render(){
+  document.getElementById('count').textContent = vagas.length + ' vaga(s)';
+  const div = document.getElementById('lista-admin');
+  if(!vagas.length){ div.innerHTML='<p style="color:var(--sub)">Nenhuma vaga publicada.</p>'; return; }
+  div.innerHTML = vagas.map(v => `
+    <article class="card">
+      <h3>${esc(v.desc.substring(0,50))}${v.desc.length>50?'...':''}</h3>
+      <div class="meta"><strong>${esc(v.nome)}</strong> — ${esc(v.local)} — R$ ${v.valor}</div>
+      <div class="meta">Duração: ${esc(v.dur)} · Tel: ${esc(v.tel)} · Autor: ${esc(v.autor||'-')}</div>
+      <button onclick="excluir(${v.id})" class="btn btn-red btn-sm" style="margin-top:.6rem">Excluir vaga</button>
+    </article>
+  `).join('');
+}
+
+function excluir(id){
+  if(!confirm('Excluir esta vaga definitivamente?')) return;
+  vagas = vagas.filter(v => v.id !== id);
+  saveVagas(); render();
+}
+
+function sair(){ localStorage.setItem('diarias_logged','null'); location.href='login.html'; }
+
+check();
+</script>
+
+</body>
+</html>

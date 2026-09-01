@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>Vagas — Diárias</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Playfair+Display:wght@700&display=swap');
+  :root{--bg:#f6f5f0;--card:#fff;--accent:#d97706;--text:#2a2a2a;--sub:#6b6b6b;--line:#ebeae5;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.45;font-size:16px;}
+  a{color:var(--accent);text-decoration:none}
+  .wrap{width:min(480px,95vw);margin-inline:auto;padding:1.2rem 1rem 3rem}
+  header{background:linear-gradient(135deg,#2a2a2a 0%,#4a3f2a 100%);color:#fff;padding:2.5rem 1rem 1.5rem;border-radius:0 0 1rem 1rem;margin:-1.2rem -1rem 1.5rem}
+  header h1{font-family:'Playfair Display',Georgia,serif;font-size:1.6rem;margin-bottom:.25rem}
+  header p{opacity:.85;font-size:.9rem;color:#ddd}
+  .nav{position:sticky;top:0;z-index:10;background:rgba(246,245,240,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:.6rem 0;margin-bottom:1rem}
+  .nav-inner{display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:.85rem}
+  .btn{display:block;width:100%;text-align:center;background:var(--accent);color:#fff;padding:.9rem .9rem;border-radius:.7rem;font-weight:700;font-size:1rem;border:none;margin-top:.7rem;cursor:pointer;box-shadow:0 6px 18px rgba(217,119,6,.25)}
+  .btn:active{transform:scale(.98)}
+  .btn-sm{padding:.6rem .7rem;font-size:.85rem}
+  .btn-ghost{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);color:#fff;box-shadow:none}
+  .badge{display:inline-block;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);padding:.2rem .6rem;border-radius:999px;font-size:.75rem;font-weight:600;margin-bottom:.5rem}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:1rem;padding:1.1rem;margin-bottom:1rem;box-shadow:0 2px 10px rgba(0,0,0,.03)}
+  .card h3{font-size:1rem;margin-bottom:.35rem}
+  .card p{font-size:.9rem;color:var(--sub);margin-top:.15rem}
+  .card .meta{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem;font-size:.82rem;color:var(--sub)}
+  .card .tag{background:var(--bg);padding:.15rem .45rem;border-radius:.3rem;font-weight:600;font-size:.75rem}
+  .publicar-box{border-top:2px solid var(--accent);margin-top:.5rem;padding-top:1rem}
+  label{font-weight:600;font-size:.82rem;display:block;margin:1rem 0 .25rem}
+  input, select, textarea{width:100%;padding:.7rem .8rem;border:1px solid #ddd;border-radius:.6rem;font-family:inherit;font-size:.95rem}
+  textarea{resize:vertical;min-height:80px}
+  .taxa-box{background:var(--bg);padding:.65rem .8rem;border-radius:.6rem;font-weight:700;font-size:.95rem;margin-top:.25rem}
+  .msg{padding:1rem;border-radius:.7rem;font-size:.9rem;background:#fff7ed;border:1px solid #fde68a;color:#92400e;margin-bottom:1rem}
+  .msg.ok{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
+  .small{font-size:.78rem;color:var(--sub)}
+  footer{margin-top:2rem;padding:2rem 0;text-align:center;color:var(--sub);font-size:.8rem;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="wrap nav-inner">
+    <a href="index.html" style="font-family:'Playfair Display',Georgia,serif;font-size:1.05rem;color:var(--text);font-weight:700">Diárias</a>
+    <div style="display:flex;gap:.9rem;align-items:center">
+      <a href="vagas.html">Vagas</a>
+      <a href="login.html">Entrar</a>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="wrap">
+    <div class="badge">Contratante publica vaga · Admin exclui</div>
+    <h1>Vagas disponíveis</h1>
+    <p>Lista pública. Só publica quem está logado como contratante.</p>
+    <a class="btn btn-sm" href="login.html" style="margin-top:.7rem;max-width:fit-content;padding:.6rem 1rem">Entrar / Cadastrar</a>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div id="user-strip" class="msg hidden" style="display:none"></div>
+
+  <section>
+    <h2 style="font-family:'Playfair Display',Georgia,serif;font-size:1.2rem;margin-bottom:.75rem">Vagas abertas</h2>
+    <div id="lista-vagas"></div>
+  </section>
+
+  <section class="publicar-box" id="publicar-area">
+    <h2 style="font-family:'Playfair Display',Georgia,serif;font-size:1.2rem;margin-bottom:.25rem">Publicar vaga</h2>
+    <p class="small">Precisa estar logado como contratante. Preencha todos os campos abaixo.</p>
+
+    <form id="form-vaga" onsubmit="event.preventDefault(); enviarVaga();" style="display:grid;gap:.75rem">
+      <div style="display:grid;gap:.75rem;grid-template-columns:1fr 1fr">
+        <div>
+          <label for="v-nome">Nome do contratante</label>
+          <input id="v-nome" type="text" placeholder="Seu nome" required />
+        </div>
+        <div>
+          <label for="v-tel">Telefone / WhatsApp</label>
+          <input id="v-tel" type="tel" placeholder="(11) 99999-9999" required />
+        </div>
+      </div>
+
+      <div style="display:grid;gap:.75rem;grid-template-columns:1fr 1fr">
+        <div>
+          <label for="v-local">Local / Bairro</label>
+          <input id="v-local" type="text" placeholder="Ex: Av. Main, 450 — Centro" required />
+        </div>
+        <div>
+          <label for="v-dur">Duração (horas ou dias)</label>
+          <input id="v-dur" type="text" placeholder="Ex: 1 dia (8h)" required />
+        </div>
+      </div>
+
+      <div>
+        <label for="v-desc">Descrição do serviço</label>
+        <textarea id="v-desc" rows="3" placeholder="O que precisa: limpeza completa, pós-obra, organização, etc." required></textarea>
+      </div>
+
+      <div style="display:grid;gap:.75rem;grid-template-columns:1fr 1fr">
+        <div>
+          <label for="v-valor">Valor do serviço (R$)</label>
+          <input id="v-valor" type="number" placeholder="Ex: 160" min="0" step="10" required />
+        </div>
+        <div>
+          <label>Taxa de publicação</label>
+          <div id="taxa-display" class="taxa-box">Calcular ao digitar valor</div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn">Enviar vaga</button>
+      <p class="small">Admin pode excluir a qualquer momento. Pagamento da taxa via PIX/transferência.</p>
+    </form>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><strong>Diárias — Mobile.</strong> Admin: <a href="login.html">Entrar</a> · <a href="admin.html">Painel</a> · <a href="https://wa.me/5511000000000">WhatsApp</a></p>
+  </div>
+</footer>
+
+<script>
+// Dados
+let users = JSON.parse(localStorage.getItem('diarias_users') || '[]');
+let vagas = JSON.parse(localStorage.getItem('diarias_vagas') || JSON.stringify([
+  {id:1, nome:'Ana P.', local:'Av. Main, 450 — Centro', tel:'(11) 99999-0000', desc:'Limpeza completa de apto 2 quartos.', dur:'1 dia (8h)', valor:160, autor:'Ana P.'},
+  {id:2, nome:'Carlos M.', local:'Rua das Flores, 120 — Jardim', tel:'(11) 98888-1111', desc:'Limpeza pesada pós-reforma.', dur:'2 dias', valor:250, autor:'Carlos M.'}
+]));
+let logged = JSON.parse(localStorage.getItem('diarias_logged') || 'null');
+
+function saveVagas(){ localStorage.setItem('diarias_vagas', JSON.stringify(vagas)); }
+function saveUsers(){ localStorage.setItem('diarias_users', JSON.stringify(users)); }
+function salvarLog(u){ localStorage.setItem('diarias_logged', JSON.stringify(u)); }
+
+function renderLista(){
+  const div = document.getElementById('lista-vagas');
+  if(!vagas.length){ div.innerHTML='<p style="color:var(--sub);font-size:.95rem">Nenhuma vaga aberta ainda.</p>'; return; }
+  div.innerHTML = vagas.map(v => `
+    <article class="card" style="border-left:4px solid var(--accent);">
+      <h3>${esc(v.desc.substring(0,50))}${v.desc.length>50?'...':''}</h3>
+      <p><strong>Contratante:</strong> ${esc(v.nome)} · <strong>Local:</strong> ${esc(v.local)}</p>
+      <p><strong>Contato:</strong> ${esc(v.tel)} · <strong>Duração:</strong> ${esc(v.dur)} · <strong>Valor:</strong> R$ ${v.valor}</p>
+      <div class="meta">
+        <span class="tag">${esc(v.autor||'—')}</span>
+        ${ (logged && logged.tipo === 'admin') ? `<button onclick="excluirVaga(${v.id})" style="border:none;background:#ddd;padding:.2rem .5rem;border-radius:.3rem;font-weight:600;font-size:.75rem;cursor:pointer">Excluir admin</button>` : '' }
+      </div>
+    </article>
+  `).join('');
+}
+
+function excluirVaga(id){
+  if(!confirm('Excluir esta vaga?')) return;
+  vagas = vagas.filter(v => v.id !== id);
+  saveVagas(); renderLista();
+}
+
+function esc(t){ const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
+
+function enviarVaga(){
+  const nome = document.getElementById('v-nome').value.trim();
+  const tel = document.getElementById('v-tel').value.trim();
+  const local = document.getElementById('v-local').value.trim();
+  const desc = document.getElementById('v-desc').value.trim();
+  const dur = document.getElementById('v-dur').value.trim();
+  const valor = parseFloat(document.getElementById('v-valor').value) || 0;
+  if(!nome||!local||!tel||!desc||!dur||!valor){ alert('Preencha todos os campos.'); return; }
+  vagas.unshift({id:Date.now(), nome, local, tel, desc, dur, valor, autor: (logged ? (logged.nome||logged.user) : nome)});
+  saveVagas(); renderLista();
+  document.getElementById('form-vaga').reset();
+  document.getElementById('taxa-display').textContent='Calcular ao digitar valor';
+  alert('Vaga enviada! Admin vai analisar e publicar (ou excluir se necessário).');
+}
+
+// Cálculo taxa
+const inp = document.getElementById('v-valor');
+const disp = document.getElementById('taxa-display');
+if(inp && disp){
+  inp.addEventListener('input', () => {
+    const v = parseFloat(inp.value) || 0;
+    let taxa = (v <= 150) ? 20 : Math.max(10, v*0.10);
+    disp.textContent = 'Taxa: R$ ' + taxa.toFixed(2).replace('.',',') + ' (pix/transferência)';
+  });
+}
+
+function checkLoginUI(){
+  const strip = document.getElementById('user-strip');
+  if(logged){
+    strip.classList.remove('hidden'); strip.style.display='block';
+    const tipo = (logged.tipo==='admin') ? 'Admin' : (logged.tipo==='contratando' || logged.tipo==='ambos') ? 'Contratante' : 'Diarista';
+    strip.innerHTML = `<strong>Logado:</strong> ${esc(logged.nome||logged.user)} (${tipo}) · <a href="#" onclick="sair();return false;" style="text-decoration:underline">Sair</a>`;
+  } else {
+    strip.classList.add('hidden'); strip.style.display='none';
+  }
+}
+
+function sair(){ logged=null; salvarLog(null); checkLoginUI(); renderLista(); location.reload(); }
+
+renderLista();
+checkLoginUI();
+</script>
+
+</body>
+</html>

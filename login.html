@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>Entrar — Diárias</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Playfair+Display:wght@700&display=swap');
+  :root{--bg:#f6f5f0;--card:#fff;--accent:#d97706;--text:#2a2a2a;--sub:#6b6b6b;--line:#ebeae5;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.45;font-size:16px;}
+  a{color:var(--accent);text-decoration:none}
+  .wrap{width:min(480px,95vw);margin-inline:auto;padding:1.2rem 1rem 3rem}
+  header{background:linear-gradient(135deg,#2a2a2a 0%,#4a3f2a 100%);color:#fff;padding:2.5rem 1rem 1.5rem;border-radius:0 0 1rem 1rem;margin:-1.2rem -1rem 1.5rem}
+  header h1{font-family:'Playfair Display',Georgia,serif;font-size:1.6rem;margin-bottom:.25rem}
+  header p{opacity:.85;font-size:.9rem;color:#ddd}
+  .nav{position:sticky;top:0;z-index:10;background:rgba(246,245,240,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:.6rem 0;margin-bottom:1rem}
+  .nav-inner{display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:.85rem}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:1rem;padding:1.25rem;margin-bottom:1rem;box-shadow:0 2px 10px rgba(0,0,0,.03)}
+  .card h2{font-family:'Playfair Display',Georgia,serif;font-size:1.2rem;margin-bottom:.15rem}
+  .sub{font-size:.85rem;color:var(--sub);margin-bottom:1rem}
+  label{font-weight:600;font-size:.82rem;display:block;margin:.8rem 0 .25rem}
+  input, select{width:100%;padding:.75rem .8rem;border:1px solid #ddd;border-radius:.6rem;font-family:inherit;font-size:.95rem}
+  .btn{display:block;width:100%;text-align:center;background:var(--accent);color:#fff;padding:.9rem .9rem;border-radius:.7rem;font-weight:700;font-size:1rem;border:none;margin-top:.5rem;cursor:pointer;box-shadow:0 6px 18px rgba(217,119,6,.25)}
+  .btn:active{transform:scale(.98)}
+  .btn-ghost{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);color:#fff;box-shadow:none}
+  .small{font-size:.78rem;color:var(--sub)}
+  .grid2{display:grid;gap:.75rem;grid-template-columns:1fr 1fr}
+  @media(max-width:420px){.grid2{grid-template-columns:1fr}}
+  footer{text-align:center;padding:2rem 0;color:var(--sub);font-size:.85rem;border-top:1px solid var(--line)}
+  .cookie-banner{position:fixed;bottom:0;left:0;right:0;background:#2a2a2a;color:#fff;padding:1rem 1rem;z-index:100;font-size:.9rem;display:none}
+  .cookie-banner.show{display:block}
+  .cookie-banner button{background:var(--accent);color:#fff;border:none;padding:.5rem .8rem;border-radius:.4rem;font-weight:600;margin-top:.5rem;cursor:pointer}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="wrap nav-inner">
+    <a href="index.html" style="font-family:'Playfair Display',Georgia,serif;font-size:1.05rem;color:var(--text);font-weight:700">Diárias</a>
+    <div style="display:flex;gap:.9rem;align-items:center">
+      <a href="vagas.html">Vagas</a>
+      <a href="login.html">Entrar</a>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="wrap">
+    <div class="badge">Admin fixo: admin / admin</div>
+    <h1>Entrar ou criar conta</h1>
+    <p>Contratantes precisam de conta para publicar vaga.</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="card">
+    <h2>Login</h2>
+    <p class="sub">Admin: <strong>admin</strong> / <strong>admin</strong></p>
+    <form onsubmit="event.preventDefault(); doLogin();" style="display:grid;gap:.6rem">
+      <div>
+        <label for="l-user">Usuário</label>
+        <input id="l-user" type="text" placeholder="Ex: admin ou joao" required />
+      </div>
+      <div>
+        <label for="l-pass">Senha</label>
+        <input id="l-pass" type="password" placeholder="Sua senha" required />
+      </div>
+      <button type="submit" class="btn">Entrar</button>
+      <p class="small">Ainda não tem conta? <a href="#cadastro" onclick="mostrarCadastro();return false;" style="font-weight:600">Cadastre-se</a>.</p>
+    </form>
+  </section>
+
+  <section id="cadastro" class="card hidden" style="display:none">
+    <h2>Criar conta — Contratante</h2>
+    <p class="sub">Preencha para poder publicar vagas.</p>
+    <form onsubmit="event.preventDefault(); doCadastro();" style="display:grid;gap:.6rem">
+      <div class="grid2">
+        <div>
+          <label for="c-user">Usuário</label>
+          <input id="c-user" type="text" placeholder="Nome de usuário" required />
+        </div>
+        <div>
+          <label for="c-email">E-mail</label>
+          <input id="c-email" type="email" placeholder="seu@email.com" required />
+        </div>
+      </div>
+      <div class="grid2">
+        <div>
+          <label for="c-pass">Senha</label>
+          <input id="c-pass" type="password" placeholder="Crie uma senha" required />
+        </div>
+        <div>
+          <label for="c-tel">Telefone / WhatsApp</label>
+          <input id="c-tel" type="tel" placeholder="(11) 99999-9999" required />
+        </div>
+      </div>
+      <div>
+        <label for="c-tipo">Tipo de usuário</label>
+        <select id="c-tipo" required>
+          <option value="">Selecione...</option>
+          <option value="contratando">Só contratando (publicar vagas)</option>
+          <option value="diarista">Só procurando diária</option>
+          <option value="ambos">Ambos (contratar e trabalhar)</option>
+        </select>
+      </div>
+      <button type="submit" class="btn">Criar conta</button>
+      <p class="small">Já tem conta? <a href="#" onclick="mostrarLogin();return false;" style="font-weight:600">Volte para entrar</a>.</p>
+    </form>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><strong>Diárias.</strong> Admin fixo: admin/admin · <a href="vagas.html">Vagas</a> · <a href="admin.html">Admin</a></p>
+  </div>
+</footer>
+
+<script>
+function mostrarCadastro(){ document.getElementById('cadastro').style.display='block'; document.getElementById('cadastro').classList.remove('hidden'); }
+function mostrarLogin(){ document.getElementById('cadastro').style.display='none'; document.getElementById('cadastro').classList.add('hidden'); }
+
+const ADMIN_USER='admin'; const ADMIN_PASS='admin';
+let users = JSON.parse(localStorage.getItem('diarias_users') || '[]');
+let logged = JSON.parse(localStorage.getItem('diarias_logged') || 'null');
+
+function saveUsers(){ localStorage.setItem('diarias_users', JSON.stringify(users)); }
+function saveLogged(u){ localStorage.setItem('diarias_logged', JSON.stringify(u)); }
+
+function doLogin(){
+  const user = document.getElementById('l-user').value.trim();
+  const pass = document.getElementById('l-pass').value;
+  if(user===ADMIN_USER && pass===ADMIN_PASS){
+    logged={user:ADMIN_USER, nome:'Administradora', tipo:'admin'}; saveLogged(logged); alert('Admin logado!'); location.href='admin.html'; return;
+  }
+  const found = users.find(u=>u.user===user && u.pass===pass);
+  if(found){
+    logged={user:found.user, nome:found.name||found.user, tipo:found.tipo||'contratante'}; saveLogged(logged); alert('Logado!'); location.href='vagas.html';
+  } else {
+    alert('Usuário ou senha incorretos. Admin: admin/admin');
+  }
+}
+
+function doCadastro(){
+  const user = document.getElementById('c-user').value.trim();
+  const email = document.getElementById('c-email').value.trim();
+  const pass = document.getElementById('c-pass').value;
+  const tel = document.getElementById('c-tel').value.trim();
+  const tipo = document.getElementById('c-tipo').value;
+  if(!user||!email||!pass||!tel||!tipo){ alert('Preencha todos os campos.'); return; }
+  if(users.find(u=>u.user===user)){ alert('Já existe usuário com esse nome.'); return; }
+  users.push({user, email, pass, tel, tipo, name:user, criado:new Date().toISOString()});
+  saveUsers(); alert('Conta criada! Entre com seu usuário e senha.'); mostrarLogin();
+}
+<div id="cookie-banner" class="cookie-banner" role="dialog" aria-label="Aviso de cookies"><div class="wrap" style="padding:0"><strong>Armazenamento local.</strong> Este site usa localStorage para guardar login, vagas e preferências. <button onclick="aceitarCookies()">Entendi</button></div></div>
+<script>function aceitarCookies(){ localStorage.setItem('diarias_cookies','1'); document.getElementById('cookie-banner').classList.remove('show'); } if(!localStorage.getItem('diarias_cookies')) document.getElementById('cookie-banner').classList.add('show');</script>
+
+</script>
+
+</body>
+</html>
