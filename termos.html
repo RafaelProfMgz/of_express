@@ -1,26 +1,78 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Termos — OF</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter&family=Playfair+Display:wght@700&display=swap');
-  :root{--bg:#f6f5f0;--text:#2a2a2a;--line:#ebeae5;--accent:#d97706;}
-  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.45;font-size:16px;}
-  .wrap{width:min(480px,95vw);margin-inline:auto;padding:1.5rem 1rem 3rem}
-  header{padding:2rem 0;margin-bottom:1rem}
-  h1{font-family:'Playfair Display',Georgia,serif;font-size:1.5rem;margin-bottom:.5rem}
-  a{color:var(--accent)}
-</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>Termos de uso — OF</title>
+<link rel="stylesheet" href="assets/style.css">
 </head>
-<body>
-<div class="wrap">
-  <header><h1>Termos de uso</h1><p>Ofício de Diárias (OF) — Grupo administrado.</p></header>
-  <p><strong>1. Uso do site.</strong> O site é destinado à intermediação entre contratantes e diaristas. A administradora não se responsabiliza por acordos particulares fora do ambiente da plataforma.</p>
-  <p><strong>2. Publicação.</strong> Apenas contratantes logados podem publicar vagas. A admin pode excluir qualquer postagem a qualquer momento.</p>
-  <p><strong>3. Taxa.</strong> A taxa de publicação é calculada conforme regra: até R$ 150 → fixa; acima → 10% (min R$ 10).</p>
-  <p><strong>4. Pagamento.</strong> O cliente pode pagar direto ou enviar o valor para a administradora fazer o repasse. O comprovante é gerado pela admin.</p>
-  <p><strong>5. Responsabilidade.</strong> O usuário concorda com a política de privacidade e com as regras de cadastro.</p>
-  <p style="margin-top:1rem"><a href="index.html">← Voltar</a></p>
-</div>
+<body data-pagina="termos">
+
+<div id="of-header"></div>
+
+<main class="wrap legal">
+  <div class="page-head">
+    <h1>Termos de uso</h1>
+    <p>OF — Ofício de Diárias</p>
+  </div>
+  <p class="atualizado">Última atualização: 1º de setembro de 2026 · Versão MVP</p>
+
+  <div class="card">
+    <p>Ao criar uma conta ou usar o OF — Ofício de Diárias ("plataforma", "site"), você concorda com os termos abaixo. Se não concordar, não utilize o site.</p>
+  </div>
+
+  <h2>1. O que a plataforma é</h2>
+  <p>O OF é um espaço de <strong>intermediação</strong> entre pessoas que precisam de serviços de limpeza, organização e afins ("contratantes") e profissionais que prestam esses serviços ("diaristas"). A administradora organiza as publicações, faz o meio de campo e dá suporte.</p>
+  <p>A plataforma <strong>não é empregadora</strong> das diaristas e não caracteriza vínculo trabalhista entre nenhuma das partes. Não somos parte no contrato de prestação de serviço firmado entre contratante e diarista.</p>
+
+  <h2>2. Cadastro e conta</h2>
+  <ul>
+    <li>É necessário ter conta para <strong>publicar</strong> uma diária. Consultar diárias e entrar em contato com contratantes é livre, sem cadastro.</li>
+    <li>Você é responsável pela veracidade dos dados informados e por manter sua senha em sigilo.</li>
+    <li>Contas com dados falsos, ofensivos ou usadas para fraude podem ser suspensas ou excluídas sem aviso.</li>
+    <li>Nesta versão MVP, os dados de conta ficam armazenados <strong>apenas no navegador do usuário</strong> (localStorage). Não há servidor, não há recuperação de senha e limpar os dados do navegador apaga a conta.</li>
+  </ul>
+
+  <h2>3. Publicação de diárias</h2>
+  <ul>
+    <li>Só quem tem perfil de <em>Contratante</em> (ou "os dois") pode publicar.</li>
+    <li>O anúncio deve descrever o serviço com honestidade: local, duração, valor e o que será feito.</li>
+    <li>É proibido publicar conteúdo ilegal, discriminatório, enganoso, ou vagas que não sejam de serviço real.</li>
+    <li>A administradora pode <strong>editar ou remover qualquer publicação a qualquer momento</strong>, sem necessidade de justificativa prévia, inclusive por suspeita de fraude ou reclamação de usuários.</li>
+  </ul>
+
+  <h2>4. Taxa de intermediação</h2>
+  <p>A publicação de uma diária está sujeita a uma taxa paga pelo contratante:</p>
+  <ul>
+    <li>Serviços de até <strong>R$ 150</strong>: taxa fixa de <strong>R$ 20</strong>.</li>
+    <li>Serviços acima de R$ 150: <strong>10% do valor</strong>, com mínimo de R$ 10.</li>
+  </ul>
+  <p>A taxa cobre a organização da vaga, o match e o suporte da administradora. Ela não inclui o valor do serviço, que é combinado e pago diretamente entre contratante e diarista.</p>
+  <p><strong>Aviso sobre esta versão:</strong> o checkout do site (PIX, cartão de crédito e cartão de débito) é uma <strong>simulação de demonstração</strong>. Nenhum valor é efetivamente cobrado, nenhum dado de cartão é transmitido ou armazenado, e nenhum comprovante emitido tem validade fiscal.</p>
+
+  <h2>5. Reembolso e cancelamento</h2>
+  <p>Se a diária for removida pela administradora sem culpa do contratante, a taxa é devolvida integralmente. Taxas de publicações retiradas pelo próprio contratante após o anúncio ir ao ar não são reembolsadas.</p>
+
+  <h2>6. Responsabilidades</h2>
+  <ul>
+    <li>O contratante responde pelas condições do local, pela segurança durante o serviço e pelo pagamento acordado.</li>
+    <li>A diarista responde pela execução do serviço combinado, pela pontualidade e pelo cuidado com o patrimônio do contratante.</li>
+    <li>A plataforma não se responsabiliza por danos, furtos, acidentes, descumprimento de acordos ou por combinações feitas fora do site. Havendo problema, a administradora medeia o que estiver ao seu alcance.</li>
+  </ul>
+
+  <h2>7. Conteúdo dos usuários</h2>
+  <p>Ao publicar textos e dados de contato no site, você autoriza a exibição pública dessas informações para viabilizar a contratação. Dados de contato de anúncios são, por natureza, visíveis a qualquer visitante.</p>
+
+  <h2>8. Alterações nos termos</h2>
+  <p>Estes termos podem ser atualizados. Mudanças relevantes serão comunicadas na página inicial. O uso continuado após a alteração significa aceitação da nova versão.</p>
+
+  <h2>9. Contato</h2>
+  <p>Dúvidas sobre estes termos: <a href="contato.html">página de contato</a>.</p>
+
+  <p class="mt1"><a href="privacidade.html">Ver a política de privacidade →</a></p>
+</main>
+
+<div id="of-footer"></div>
+<script src="assets/app.js"></script>
 </body>
 </html>

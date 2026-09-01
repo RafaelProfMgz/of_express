@@ -1,41 +1,144 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Contato — OF</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter&family=Playfair+Display:wght@700&display=swap');
-:root{--bg:#f6f5f0;--card:#fff;--accent:#d97706;--text:#2a2a2a;--sub:#6b6b6b;--line:#ebeae5;}
-body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.45;font-size:16px;}
-.wrap{width:min(480px,95vw);margin-inline:auto;padding:1rem 1rem 3rem}
-header{background:linear-gradient(135deg,#2a2a2a 0%,#4a3f2a 100%);color:#fff;padding:2rem 1rem 1.5rem;border-radius:0 0 1rem 1rem;margin:-1rem -1rem 1.5rem}
-h1{font-family:'Playfair Display',Georgia,serif;font-size:1.6rem;margin-bottom:.25rem}
-.card{background:var(--card);border:1px solid var(--line);border-radius:1rem;padding:1.2rem;margin-bottom:1rem}
-label{font-weight:600;font-size:.82rem;display:block;margin:.8rem 0 .25rem}
-input,textarea{width:100%;padding:.7rem .8rem;border:1px solid #ddd;border-radius:.6rem;font-family:inherit;font-size:.95rem}
-textarea{resize:vertical;min-height:80px}
-.btn{display:block;width:100%;text-align:center;background:var(--accent);color:#fff;padding:.9rem;border-radius:.7rem;font-weight:700;font-size:1rem;border:none;margin-top:.5rem;cursor:pointer;box-shadow:0 6px 18px rgba(217,119,6,.25)}
-a{color:var(--accent)}
-</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>Contato — OF</title>
+<link rel="stylesheet" href="assets/style.css">
 </head>
-<body>
-<header><div class="wrap"><div style="font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:.85rem;opacity:.8">OF — Administradora</div><h1>Contato com a admin</h1><p>Fale diretamente com a administradora do grupo.</p></div></header>
+<body data-pagina="contato">
+
+<div id="of-header"></div>
+
 <main class="wrap">
-<div class="card">
-<h2>Enviar mensagem</h2>
-<form onsubmit="event.preventDefault(); alert('Mensagem enviada! A admin responderá pelo WhatsApp ou e-mail.');">
-<div><label for="nome">Seu nome</label><input id="nome" type="text" placeholder="Seu nome" required /></div>
-<div><label for="email">E-mail</label><input id="email" type="email" placeholder="seu@email.com" required /></div>
-<div><label for="msg">Mensagem</label><textarea id="msg" rows="3" placeholder="O que precisa?" required></textarea></div>
-<button type="submit" class="btn">Enviar para admin</button>
-</form>
-</div>
-<div class="card">
-<h2>Contato direto</h2>
-<p><strong>WhatsApp:</strong> <a href="https://wa.me/5511000000000">(11) 00000-0000</a></p>
-<p><strong>E-mail:</strong> <a href="mailto:seu@email.com">seu@email.com</a></p>
-<p>Troque para os seus dados de contato.</p>
-</div>
+  <div class="page-head">
+    <h1>Falar com a administradora</h1>
+    <p>Dúvidas, problema com uma diária, contrato para empresa ou condomínio: é por aqui.</p>
+  </div>
+
+  <section class="card">
+    <h2>Enviar mensagem</h2>
+    <p class="sub">Respondo pelo WhatsApp ou e-mail, normalmente no mesmo dia.</p>
+    <form class="form" id="form-contato" novalidate>
+      <div class="grid2">
+        <div>
+          <label for="m-nome">Seu nome *</label>
+          <input id="m-nome" type="text" autocomplete="name" required>
+        </div>
+        <div>
+          <label for="m-tel">WhatsApp</label>
+          <input id="m-tel" type="tel" autocomplete="tel" placeholder="(11) 99999-9999">
+        </div>
+      </div>
+      <div>
+        <label for="m-email">E-mail *</label>
+        <input id="m-email" type="email" autocomplete="email" placeholder="seu@email.com" required>
+      </div>
+      <div>
+        <label for="m-assunto">Assunto *</label>
+        <select id="m-assunto" required>
+          <option value="Dúvida geral">Dúvida geral</option>
+          <option value="Problema com uma diária">Problema com uma diária</option>
+          <option value="Quero publicar uma diária">Quero publicar uma diária</option>
+          <option value="Quero trabalhar como diarista">Quero trabalhar como diarista</option>
+          <option value="Contrato para empresa / condomínio">Contrato para empresa / condomínio</option>
+          <option value="Excluir meus dados">Excluir meus dados</option>
+          <option value="Outro">Outro</option>
+        </select>
+      </div>
+      <div>
+        <label for="m-msg">Mensagem *</label>
+        <textarea id="m-msg" rows="4" placeholder="Conte o que você precisa." required></textarea>
+      </div>
+      <div id="m-erro" class="msg err hidden" role="alert"></div>
+      <div id="m-ok" class="msg ok hidden" role="status"></div>
+      <button type="submit" class="btn">Enviar mensagem</button>
+      <button type="button" class="btn-whatsapp" id="btn-wa" style="margin-top:.5rem">Preferir WhatsApp? Enviar por lá</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Contato direto</h2>
+    <dl class="dl">
+      <div class="row"><dt>WhatsApp</dt><dd><a id="link-wa" href="#" target="_blank" rel="noopener"></a></dd></div>
+      <div class="row"><dt>E-mail</dt><dd><a id="link-email" href="#"></a></dd></div>
+      <div class="row"><dt>Atendimento</dt><dd>Seg. a sáb., 8h às 20h</dd></div>
+    </dl>
+  </section>
+
+  <section class="card">
+    <h2>Perguntas frequentes</h2>
+    <h3 style="margin-top:.75rem">Preciso de conta para entrar em contato com uma diária?</h3>
+    <p>Não. Ver as diárias e chamar o contratante no WhatsApp é livre. A conta serve para publicar diárias e manter um perfil.</p>
+    <h3 style="margin-top:1rem">Como funciona a taxa?</h3>
+    <p>Quem publica paga a taxa de intermediação: R$ 20 fixos até R$ 150 de serviço, ou 10% do valor acima disso (mínimo R$ 10).</p>
+    <h3 style="margin-top:1rem">O pagamento do serviço passa pelo site?</h3>
+    <p>Não. O valor da diária é combinado e pago direto entre contratante e diarista. Pelo site passa apenas a taxa de publicação.</p>
+  </section>
 </main>
-<footer style="text-align:center;padding:2rem 1rem;color:#6b6b6b;font-size:.85rem;border-top:1px solid #ebeae5"><p><a href="index.html">← Voltar</a> · <a href="termos.html">Termos</a> · <a href="privacidade.html">Privacidade</a></p></footer>
+
+<div id="of-footer"></div>
+
+<script src="assets/app.js"></script>
+<script>
+document.addEventListener('of:pronto', function () {
+  var wa = 'https://wa.me/' + OF.CFG.whatsappAdmin;
+  var linkWa = document.getElementById('link-wa');
+  linkWa.href = wa;
+  linkWa.textContent = OF.CFG.whatsappAdmin.replace(/^55(\d{2})(\d{4,5})(\d{4})$/, '($1) $2-$3');
+  var linkEmail = document.getElementById('link-email');
+  linkEmail.href = 'mailto:' + OF.CFG.emailAdmin;
+  linkEmail.textContent = OF.CFG.emailAdmin;
+
+  // Pré-preenche para quem está logado
+  var u = OF.usuarioAtual();
+  if (u) {
+    document.getElementById('m-nome').value = u.nome || '';
+    document.getElementById('m-email').value = u.email || '';
+    document.getElementById('m-tel').value = u.tel || '';
+  }
+
+  function coletar() {
+    return {
+      nome: document.getElementById('m-nome').value.trim(),
+      email: document.getElementById('m-email').value.trim(),
+      tel: document.getElementById('m-tel').value.trim(),
+      assunto: document.getElementById('m-assunto').value,
+      mensagem: document.getElementById('m-msg').value.trim()
+    };
+  }
+  function validar(d) {
+    if (d.nome.length < 2) return 'Informe seu nome.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email)) return 'Informe um e-mail válido.';
+    if (d.mensagem.length < 10) return 'Escreva uma mensagem com pelo menos 10 caracteres.';
+    return null;
+  }
+
+  document.getElementById('form-contato').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var d = coletar();
+    var erro = document.getElementById('m-erro'), ok = document.getElementById('m-ok');
+    var falha = validar(d);
+    if (falha) { ok.classList.add('hidden'); erro.textContent = falha; erro.classList.remove('hidden'); return; }
+    erro.classList.add('hidden');
+    OF.registrarMensagem(d);
+    ok.innerHTML = '<strong>Mensagem registrada.</strong> No MVP ela fica salva neste navegador — para resposta imediata, use o botão do WhatsApp abaixo.';
+    ok.classList.remove('hidden');
+    document.getElementById('m-msg').value = '';
+  });
+
+  document.getElementById('btn-wa').addEventListener('click', function () {
+    var d = coletar();
+    var erro = document.getElementById('m-erro');
+    var falha = validar(d);
+    if (falha) { erro.textContent = falha; erro.classList.remove('hidden'); return; }
+    erro.classList.add('hidden');
+    OF.registrarMensagem(d);
+    var texto = 'Olá! Sou ' + d.nome + '.\nAssunto: ' + d.assunto + '\n\n' + d.mensagem +
+                '\n\nMeu e-mail: ' + d.email + (d.tel ? '\nMeu telefone: ' + d.tel : '');
+    window.open(wa + '?text=' + encodeURIComponent(texto), '_blank', 'noopener');
+  });
+});
+</script>
 </body>
 </html>

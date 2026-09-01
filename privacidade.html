@@ -1,21 +1,80 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Privacidade — OF</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter&family=Playfair+Display:wght@700&display=swap');
-:root{--bg:#f6f5f0;--text:#2a2a2a;--accent:#d97706;}
-body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.45;font-size:16px;}
-.wrap{width:min(480px,95vw);margin-inline:auto;padding:1.5rem 1rem 3rem}
-h1{font-family:'Playfair Display',Georgia,serif;font-size:1.5rem;margin-bottom:.5rem}
-a{color:var(--accent)}
-</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>Política de privacidade — OF</title>
+<link rel="stylesheet" href="assets/style.css">
 </head>
-<body><div class="wrap">
-<h1>Política de privacidade</h1>
-<p><strong>Dados coletados.</strong> Nome, email, telefone, tipo de usuário e dados das vagas. Não coletamos dados de pagamento diretamente no site.</p>
-<p><strong>Uso.</strong> Organização do grupo de diaristas, match, agendamento e repasse de pagamento. A admin pode excluir dados a pedido.</p>
-<p><strong>Compartilhamento.</strong> Dados de contato das vagas são visíveis publicamente para facilitar a contratação. Dados de login são protegidos.</p>
-<p><a href="index.html">← Voltar</a></p>
-</div></body>
+<body data-pagina="privacidade">
+
+<div id="of-header"></div>
+
+<main class="wrap legal">
+  <div class="page-head">
+    <h1>Política de privacidade</h1>
+    <p>OF — Ofício de Diárias</p>
+  </div>
+  <p class="atualizado">Última atualização: 1º de setembro de 2026 · Versão MVP</p>
+
+  <div class="card">
+    <p><strong>Resumo em uma frase:</strong> nesta versão MVP, tudo o que você digita fica salvo <strong>somente no seu próprio navegador</strong>. Não há servidor, não há banco de dados nosso e nada é enviado para terceiros.</p>
+  </div>
+
+  <h2>1. Quais dados coletamos</h2>
+  <ul>
+    <li><strong>Conta:</strong> nome, usuário, e-mail, WhatsApp, cidade, tipo de perfil e senha.</li>
+    <li><strong>Diárias publicadas:</strong> título, tipo, descrição, endereço/bairro, cidade, duração, período, valor, nome e telefone de contato.</li>
+    <li><strong>Contatos enviados:</strong> nome, telefone, disponibilidade, experiência e mensagem de quem se interessa por uma diária.</li>
+    <li><strong>Mensagens à administradora:</strong> nome, e-mail, telefone, assunto e texto.</li>
+    <li><strong>Pagamentos simulados:</strong> método escolhido, valor, identificador da transação simulada e, no caso de cartão, apenas os <strong>4 últimos dígitos</strong> e o nome digitado. Número completo do cartão e CVV <strong>não são gravados em nenhum momento</strong>.</li>
+  </ul>
+
+  <h2>2. Onde os dados ficam</h2>
+  <p>No <code>localStorage</code> do seu navegador — um armazenamento local do próprio dispositivo. Consequências práticas:</p>
+  <ul>
+    <li>Os dados não saem do seu aparelho e não são acessíveis por nós remotamente.</li>
+    <li>Se você limpar os dados do navegador, usar aba anônima ou trocar de dispositivo, as informações desaparecem e não há como recuperá-las.</li>
+    <li>Qualquer pessoa com acesso físico ao mesmo navegador vê os mesmos dados.</li>
+  </ul>
+  <p>Não usamos cookies de rastreamento, pixels de publicidade ou ferramentas de analytics de terceiros.</p>
+
+  <h2>3. Para que usamos</h2>
+  <ul>
+    <li>Manter você logado e exibir seu perfil.</li>
+    <li>Publicar e listar diárias, permitindo o contato entre as partes.</li>
+    <li>Registrar contatos e mensagens para dar suporte e organizar o match.</li>
+  </ul>
+
+  <h2>4. O que fica público</h2>
+  <p>Os dados de uma diária publicada — incluindo <strong>nome e telefone de contato</strong> — são exibidos a qualquer visitante do site, com ou sem conta. É o que permite a contratação. Publique apenas o telefone que você aceita divulgar.</p>
+  <p>Sua senha nunca é exibida em tela nem incluída em mensagens. Ainda assim, por ser um MVP sem servidor, ela é gravada sem criptografia no navegador — <strong>não reutilize uma senha importante aqui</strong>.</p>
+
+  <h2>5. Compartilhamento com terceiros</h2>
+  <p>Nenhum. Quando você escolhe enviar uma mensagem pelo WhatsApp, é o seu próprio aplicativo que abre com o texto pronto — quem envia é você, e daí em diante valem os termos e a política de privacidade do WhatsApp.</p>
+
+  <h2>6. Seus direitos (LGPD)</h2>
+  <p>Você pode, a qualquer momento:</p>
+  <ul>
+    <li><strong>Acessar e corrigir</strong> seus dados na página de <a href="perfil.html">perfil</a>.</li>
+    <li><strong>Excluir</strong> suas diárias publicadas pelo perfil, e apagar tudo limpando os dados do site no seu navegador.</li>
+    <li><strong>Solicitar</strong> esclarecimentos ou remoção de conteúdo pela <a href="contato.html">página de contato</a>.</li>
+  </ul>
+  <p>Como não mantemos cópia em servidor, a exclusão feita por você é definitiva.</p>
+
+  <h2>7. Crianças e adolescentes</h2>
+  <p>O site é destinado a maiores de 18 anos. Não coletamos dados de menores de idade intencionalmente.</p>
+
+  <h2>8. Mudanças nesta política</h2>
+  <p>Quando o site passar a ter servidor e pagamento real, esta política será revista e a mudança será comunicada antes de entrar em vigor.</p>
+
+  <h2>9. Contato</h2>
+  <p>Dúvidas sobre privacidade: <a href="contato.html">fale com a administradora</a>.</p>
+
+  <p class="mt1"><a href="termos.html">Ver os termos de uso →</a></p>
+</main>
+
+<div id="of-footer"></div>
+<script src="assets/app.js"></script>
+</body>
 </html>
